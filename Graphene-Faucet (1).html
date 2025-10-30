@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graphene-Faucet Aggregator</title>
+    <meta http-equiv="refresh" content="1200">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- LIBRERIE -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@blurtfoundation/blurtjs/dist/blurt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
+	
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="https://files.peakd.com/file/peakd-hive/graphene-faucet/qwen-image---free_2025-09-17T12-23-14-682Z.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://files.peakd.com/file/peakd-hive/graphene-faucet/qwen-image---free_2025-09-17T12-23-14-682Z.png" sizes="16x16">
+    
+    <!-- PER DISPOSITIVI APPLE (opzionale) -->
+    <link rel="apple-touch-icon" href="https://files.peakd.com/file/peakd-hive/graphene-faucet/qwen-image---free_2025-09-17T12-23-14-682Z.png">
+
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #231F20;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+#header {
+    flex-shrink: 0;
+    padding: 10px;
+    background: #1a1617;
+    width: 100%;
+    overflow: hidden;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;           
+    gap: 10px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+/* COLONNE */
+.buttons-left,
+.buttons-right,
+.logo-center {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.logo-center {
+    flex: 2;
+    justify-content: center;
+}
+
+#header img {
+    max-height: 100px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* BOTTONI */
+.button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+    background: #3FA3CC;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.button:hover {
+    background: #5AB8E0;
+}
+
+/* DROPDOWN */
+#filterSelect {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* MOBILE: tutto centrato e a colonna */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .buttons-left,
+    .buttons-right,
+    .logo-center {
+        width: 100%;
+        align-items: center;
+    }
+    
+    #header img {
+        max-height: 80px;
+    }
+    
+    .button {
+        font-size: 14px;
+        padding: 12px;
+    }
+}
+
+
+/* TABELLA - USIAMO GRID */
+.table-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ms-header {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    background: #333;
+    border: 1px solid rgba(255,255,255,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    transition: grid-template-columns 0.4s ease;
+}
+
+/* INTESTAZIONE */
+.table-header {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    background: #333;
+    border: 1px solid rgba(255,255,255,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    transition: grid-template-columns 0.4s ease;
+}
+
+.th {
+    padding: 1px 1px;
+    font-size: 26px;
+    font-weight: 500;
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.3);
+    border-right: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    user-select: none;
+}
+.th:hover { background: #444; }
+.th.active { background: #000080 !important; }
+.th:first-child { border-left: none; }
+.th:last-child { border-right: none; }
+
+/* CORPO */
+.table-body {
+    flex: 1;
+    overflow-y: auto;
+    display: block;
+    min-height: 0;
+}
+
+.table-body-row {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    min-height: 520px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: grid-template-columns 0.4s ease;
+}
+
+.table-body-cell {
+    padding: 0;
+    border-left: 1px solid rgba(255,255,255,0.3);
+    border-right: 1px solid rgba(255,255,255,0.3);
+    transition: all 0.4s ease;
+    overflow: hidden;
+}
+.table-body-cell:first-child { border-left: none; }
+.table-body-cell:last-child { border-right: none; }
+
+/* RESIZE DINAMICO - UNICO E CORRETTO */
+.table-header,
+.table-body-row {
+    grid-template-columns: 33% 33% 33%;
+}
+
+.table-header.expanded-steem,
+.table-body-row.expanded-steem { grid-template-columns: 90% 5% 5%; }
+
+.table-header.expanded-hive,
+.table-body-row.expanded-hive { grid-template-columns: 5% 90% 5%; }
+
+.table-header.expanded-blurt,
+.table-body-row.expanded-blurt { grid-template-columns: 5% 5% 90%; }
+
+/* COLLAPSED VISUAL */
+.collapsed .cell-content { font-size: 11px; opacity: 0.7; }
+.collapsed .main-iframe { min-height: 180px; }
+.collapsed .bottom-layout { height: 160px; }
+
+/* SCROLLBAR */
+.table-body::-webkit-scrollbar { width: 10px; }
+.table-body::-webkit-scrollbar-track { background: #333; }
+.table-body::-webkit-scrollbar-thumb { background: #666; border-radius: 5px; }
+
+        /* CONTENUTO CELLA */
+        .cell-content {
+            padding: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .cell-content h2 {
+            margin: 0;
+            text-align: center;
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 500;
+        }
+        .main-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            min-height: 280px;
+            background: #111;
+            border-radius: 6px;
+        }
+
+        /* LAYOUT INFERIORE */
+.bottom-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 240px;
+    margin-top: 8px;
+}
+
+.info-buttons {
+    flex-shrink: 0;
+}
+
+.sub-iframe {
+    flex: 1;
+    width: 100%;
+    border: 1px solid #555;
+    background: #222;
+    border-radius: 6px;
+    min-height: 0;
+}
+        .info-buttons {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+        .info-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 13px;
+        }
+        .info-row div { color: #ccc; }
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .sub-iframe {
+            flex: 2;
+            border: 1px solid #555;
+            background: #222;
+            border-radius: 6px;
+            min-width: 0;
+        }
+
+        /* BOTTONI */
+        .button {
+            padding: 8px;
+            font-size: 13px;
+            background: #3FA3CC;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button:hover { background: #5AB8E0; }
+        .button.disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+/* RIGA UNICA INFO */
+.info-single-row {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* RIGA 4 BOTTONI AFFIANCATI */
+.button-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.button-row .button {
+    font-size: 12px;
+    padding: 6px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.button-row .button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+        /* MODAL */
+        .login-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); display: flex;
+            justify-content: center; align-items: center; z-index: 9999;
+            font-family: Arial, sans-serif; display: none;
+        }
+        .login-modal.show { display: flex; }
+        .login-box {
+            background: #222; color: white; padding: 30px; border-radius: 12px;
+            width: 90%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .login-box h3 { margin: 0 0 20px; text-align: center; color: #4CAF50; }
+        .login-box label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        .login-box input {
+            width: 100%; padding: 10px; border: 1px solid #555;
+            border-radius: 6px; background: #333; color: white; font-size: 16px;
+        }
+        .login-box input:focus { outline: none; border-color: #4CAF50; }
+        .login-box button {
+            width: 100%; padding: 12px; margin-top: 20px;
+            background: #4CAF50; color: white; border: none; border-radius: 6px;
+            font-size: 16px; cursor: pointer;
+        }
+        .login-box button:hover { background: #45a049; }
+		
+link {
+  text-decoration: none;
+   color: #848482;
+}
+
+/* CONTENITORE */
+.slider-container {
+    position: relative;
+    width: 100%;
+    height: 50px; /* SPAZIO PER PALLINI SOPRA */
+    margin: 16px 0;
+}
+
+/* SLIDER – PIÙ BASSO */
+#voteWeight {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #555;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    bottom: 1px; /* SOTTO I PALLINI */
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+#voteWeight::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--blockchain-color);
+    cursor: pointer;
+    border: 3px solid #111;
+    box-shadow: 0 0 10px rgba(0,0,0,0.7);
+    z-index: 3;
+}
+
+#voteWeight::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--blockchain-color);
+    cursor: pointer;
+    border: 3px solid #111;
+    box-shadow: 0 0 10px rgba(0,0,0,0.7);
+}
+
+/* PALLINI – SOPRA LO SLIDER */
+.slider-marks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.slider-marks span {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 4px #000;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    pointer-events: auto;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    transition: all 0.2s ease;
+}
+
+.slider-marks span:hover {
+    color: var(--blockchain-color);
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* POSIZIONI ESATTE */
+.slider-marks span[data-value="1"]  { left: 4%; }
+.slider-marks span[data-value="20"]  { left: 21.5%; }
+.slider-marks span[data-value="40"]  { left: 40%; }
+.slider-marks span[data-value="60"]  { left: 58.5%; }
+.slider-marks span[data-value="80"]  { left: 77.5%; }
+.slider-marks span[data-value="100"] { left: 96%; transform: translate(-50%, -50%); }
+
+/* PALLINO DI FONDO */
+.slider-marks span::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #777;
+    border: 3px solid #333;
+    border-radius: 50%;
+    z-index: -1;
+    transition: all 0.2s ease;
+}
+
+.slider-marks span:hover::before {
+    background: var(--blockchain-color);
+    border-color: #000;
+    box-shadow: 0 0 12px var(--blockchain-color);
+    transform: scale(1.3);
+}
+
+/* VALORE */
+#weightValue {
+    font-weight: bold;
+    color: var(--blockchain-color);
+}
+		
+#filterSelect {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    min-width: 160px;
+    height: 44px; /* Altezza fissa per allineamento */
+    display: flex;
+    align-items: center;
+}
+
+#filterSelect:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+		
+
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="header-content">
+        <!-- SINISTRA -->
+        <div class="buttons-left">
+            <a href="https://chrome.google.com/webstore/detail/whalevault/hcoigoaekhfajcoingnngmfjdidhmdon" 
+               target="_blank" class="button">WhaleVault Chromium</a>
+            <a href="https://addons.mozilla.org/it/firefox/addon/whalevault/" 
+               target="_blank" class="button">WhaleVault Firefox</a>
+        </div>
+
+        <!-- CENTRO: LOGO -->
+        <div class="logo-center">
+            <img src="https://files.peakd.com/file/peakd-hive/graphene-faucet/23vYjGfVCrD7d84KLqnDwRfKLKsNH2feqY4ydbdiqkddhuMVV6ekjdgeN7kJwUrFMSqDP.jpg" alt="Graphene Faucet">
+        </div>
+
+        <!-- DESTRA -->
+        <div class="buttons-right">
+            <a href="https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing" 
+               target="_blank" class="button">Steem Keychain App</a>
+            <select id="filterSelect" onchange="applyFilter()">
+                <option value="L1">Last Day</option>
+                <option value="L3">Last 3 days</option>
+                <option value="L5">Last 5 days</option>
+                <option value="L7">Last 7 days</option>
+                <option value="L10">Last 10 days</option>
+                <option value="L15">Last 15 days</option>
+                <option value="A">Active</option>
+                <option value="D">Distributed</option>
+                <option value="F">Finished</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="ms-header">
+    <div id="mss" title="Steem Multistrike Actual Value" style="color:#90ee90; text-align: center; border: 1px solid #555;" ></div>
+    <div id="msh" title="Hive Multistrike Actual Value" style="white-space: pre-line; line-height: 1; color:#ffff00; text-align: center; border: 1px solid #555;"></div>
+    <div id="msb" title="Blurt Multistrike Actual Value" style="color:#cc3333; text-align: center; border: 1px solid #555;"></div>
+</div>
+
+<div class="table-container">
+    <!-- INTESTAZIONE -->
+    <div class="table-header">
+        <div id="titolosteem" title="Click to Expad/collapse Steem" class="col-steem th" onclick="toggleColumn('steem')" style="color:#90ee90;">Steem</div>
+        <div id="titolohive" title="Click to Expad/collapse Hive" class="col-hive th" onclick="toggleColumn('hive')" style="color:#ffff00;">Hive</div>
+        <div id="titoloblurt" title="Click to Expad/collapse Blurt" class="col-blurt th" onclick="toggleColumn('blurt')" style="color:#cc3333;">Blurt</div>
+    </div>
+
+    <!-- CORPO CON SCROLL -->
+    <div class="table-body" id="table-body"></div>
+</div>
+
+<!-- MODAL -->
+<div id="loginModal" class="login-modal">
+<div class="login-box">
+    <h3><a id="message"></a></h3>
+    <h3><a id="messagenter">Enter Your Credentials</a> </h3>
+    <form id="loginForm">
+        <label for="username">Your <span id="chainLabel">Steem</span> Username:</label>
+        <input type="text" id="username" placeholder="e.g. yourusername" required>
+        
+        <!-- WRAPPER PER KEY -->
+        <div id="postingKeyWrapper" style="margin-top:15px;">
+            <label for="postingKey">Your <span id="chainLabelk">Steem</span> Posting Key:</label>
+            <input type="password" id="postingKey" placeholder="5J...">
+        </div>
+		<div id="weightSliderWrapper" style="margin-top:20px; position:relative;">
+			<label>Vote Weight: <span id="weightValue">100</span>%</label>
+			<div class="slider-container">
+				<input type="range" id="voteWeight" min="1" max="100" value="100" step="1">
+				<div class="slider-marks">
+					<span data-value="1">1</span>
+					<span data-value="20">20</span>
+					<span data-value="40">40</span>
+					<span data-value="60">60</span>
+					<span data-value="80">80</span>
+					<span data-value="100">100</span>
+				</div>
+			</div>
+		</div>      
+        <button id="vote" type="submit">Vote</button>
+        <button id="cancel" type="button" onclick="hideLoginModal()">Cancel</button>
+    </form>
+</div>
+</div>
+
+<script>
+var salbee = "";
+var salsports = "";
+var nf = new Intl.NumberFormat(); 
+let currentFilter = 'L1'; 
+
+function applyFilter() {
+    const select = document.getElementById('filterSelect');
+    currentFilter = select.value; 
+
+    loadTable();
+}
+
+  steem.api.getAccounts(['multistrike'], function(err, response) {
+    if (!err) {
+	  document.getElementById('mss').textContent = nf.format(Number(response[0].balance.replace(" STEEM",""))) + " STEEM";
+    }  
+  });
+
+
+async function getBalance(tokenname) {
+    const response = await fetch('https://api.hive-engine.com/rpc/contracts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "findOne",
+            params: {
+                contract: "tokens",
+                table: "balances",
+                query: {
+                    symbol: tokenname,
+                    account: "multistrike"
+                }
+            },
+            id: 1
+        })
+    });
+
+    const data = await response.json();
+	return data.result.balance;
+}
+
+getBalance("BEE").then(result => {
+   salbee = result;
+});
+getBalance("SPORTS").then(result => {
+   salsports = result;
+});
+
+
+  hive.api.getAccounts(['multistrike'], function(err, response) {
+    if (!err) {
+	  document.getElementById('msh').textContent = nf.format(Number(response[0].balance.replace(" HIVE", ""))) + " HIVE\n" + nf.format(Number(salsports),0) + " SPORTS\n " + nf.format(Number(salbee)) + " BEE";
+    }  
+    });
+	
+  blurt.api.getAccounts(['multistrike'], function(err, response) {
+    if (!err) {
+	  document.getElementById('msb').textContent = nf.format(Number(response[0].balance.replace(" BLURT",""))) + " BLURT";
+    }
+  });
+
+    function isMobileDevice() {
+        return /Android|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+	document.getElementById("voteWeight")?.addEventListener("input", function() {
+		document.getElementById("weightValue").textContent = this.value;
+	});
+
+	document.querySelectorAll('.slider-marks span').forEach(mark => {
+		mark.addEventListener('click', function() {
+			const value = this.getAttribute('data-value');
+			const slider = document.getElementById('voteWeight');
+			slider.value = value;
+			document.getElementById('weightValue').textContent = value;
+		});
+	});
+
+    let activeColumn = null;
+
+function toggleColumn(col) {
+    const header = document.querySelector('.table-header');
+    const rows = document.querySelectorAll('.table-body-row');
+    const expandedClass = `expanded-${col}`;
+
+    // 1. RIMUOVI TUTTE le espansioni e colori
+    ['steem', 'hive', 'blurt'].forEach(c => {
+        const cls = `expanded-${c}`;
+        header.classList.remove(cls);
+        rows.forEach(r => r.classList.remove(cls));
+        const th = header.querySelector(`.col-${c}`);
+        if (th) th.classList.remove('active');  // RIMUOVE IL COLORE
+    });
+
+    // 2. Se era già attiva → collassa tutto
+    if (activeColumn === col) {
+        activeColumn = null;
+        return;
+    }
+
+    // 3. Altrimenti → espandi
+    activeColumn = col;
+    header.classList.add(expandedClass);
+    rows.forEach(r => r.classList.add(expandedClass));
+    
+    // Applica colore solo alla colonna cliccata
+    const activeTh = header.querySelector(`.col-${col}`);
+    if (activeTh) activeTh.classList.add('active');
+}
+
+function createEventCell(item) {
+    const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
+    const colore = item.blockchain === "HIVE" ? "#ffff00" : 
+                   item.blockchain === "BLURT" ? "#cc3333" : "#90ee90";
+    const chain = item.blockchain;
+
+    const permh = item.perm + 'home';
+    const permd = item.perm + 'draw';
+    const perma = item.perm + 'away';
+    const isDisabled = new Date(item.matchdate) <= new Date() || 
+                       item.tstatus === "Match Finished" || 
+                       item.pstatus === "Distributed";
+
+    return `
+        <div class="cell-content">
+            <p id="perma-${item.id}" hidden>${item.perm}</p>
+            <h2 id="title-${bodyName}-endtitle" style="color:${colore}; margin-bottom: 4px;">
+                ${item.team1} vs ${item.team2}
+            </h2>
+            <iframe id="body-${bodyName}-endbody" class="main-iframe" srcdoc=""></iframe>
+
+            <div class="bottom-layout">
+                <div class="info-buttons">
+                    <!-- RIGA INFO -->
+                    <div class="info-single-row" style="color:${colore}; font-size:18px; margin-bottom: 6px;">
+                        ${item.postdate.substring(0,10)} 
+                        - ${item.tstatus.replace("Match ", "")} 
+                        - ${item.pstatus || "Not Payed"}
+                        - ${item.team1} ${item.scoreteam1 || "?"} - ${item.scoreteam2 || "?"} ${item.team2}  
+                    </div>
+
+                    <!-- RIGA BOTTONI -->
+                    <div class="button-row">
+                        <button onclick="${isDisabled ? '' : `vote('${item.perm}', '${chain}', 'Vote Match: ${item.team1} vs ${item.team2}')`}"
+                                class="${isDisabled ? 'button disabled' : 'button'}">Vote Match</button>
+                        <button onclick="${isDisabled ? '' : `vote('${permh}', '${chain}', '${item.team1} Win')`}"
+                                class="${isDisabled ? 'button disabled' : 'button'}">${item.team1} Win</button>
+                        <button onclick="${isDisabled ? '' : `vote('${permd}', '${chain}', 'Draw for ${item.team1} vs ${item.team2}')`}"
+                                class="${isDisabled ? 'button disabled' : 'button'}">Draw</button>
+                        <button onclick="${isDisabled ? '' : `vote('${perma}', '${chain}', '${item.team2} Win')`}"
+                                class="${isDisabled ? 'button disabled' : 'button'}">${item.team2} Win</button>
+                    </div>
+                </div>
+
+                <!-- SUB-IFRAME SOTTO I BOTTONI -->
+                <iframe id="sub-iframe-${bodyName}" class="sub-iframe" srcdoc=""></iframe>
+            </div>
+        </div>
+    `;
+}
+
+    async function loadTable() {
+        try {
+            const response = await fetch('https://timeapp.foundation/graphene.php?type=' + currentFilter);
+            const data = await response.json();
+
+            const blockchainData = { 'STEEM': [], 'HIVE': [], 'BLURT': [] };
+            data.forEach(item => blockchainData[item.blockchain].push(item));
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            const maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
+
+for (let i = 0; i < maxRows; i++) {
+    const row = document.createElement('div');
+    row.className = 'table-body-row';
+
+    ['STEEM', 'HIVE', 'BLURT'].forEach(chain => {
+        const cell = document.createElement('div');
+        cell.className = `table-body-cell col-${chain.toLowerCase()}`;
+        cell.innerHTML = blockchainData[chain][i] 
+            ? createEventCell(blockchainData[chain][i])
+            : '<div class="cell-content" style="color:#666; text-align:center; padding:60px;">—</div>';
+        row.appendChild(cell);
+    });
+
+    document.getElementById('table-body').appendChild(row);
+}
+
+load(); // <--- CARICA IFRAME
+
+			
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+function load() {
+    const rows = document.querySelectorAll('.table-body-row');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('.table-body-cell');
+        ['steem', 'hive', 'blurt'].forEach((chain, colIdx) => {
+            const cell = cells[colIdx];
+            if (!cell || cell.innerHTML.includes('—')) return;
+
+            const str = cell.innerHTML;
+            const ini = str.indexOf("body-");
+            const fin = str.indexOf("-endbody");
+            if (ini === -1 || fin === -1) return;
+            const bodyName = str.substr(ini + 5, fin - ini - 5);
+            const parts = bodyName.split('_o_o_o_');
+            const author = parts[parts.length - 2];
+            const permlink = parts[parts.length - 1];
+
+            const api = chain === 'steem' ? steem.api : 
+                       chain === 'hive' ? hive.api : blurt.api;
+
+            api.getContent(author, permlink, (err, result) => {
+                if (err || !result) return;
+
+                const md = window.markdownit();
+                let html = md.render(result.body);
+                html = html.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+                html = html.replace(".jpg", ".jpg'>").replace(".png", ".png'>");
+                html = html.replace("https://steemitimages.com", "<img style='max-width:80%' src='https://steemitimages.com");
+                html = html.replace("https://imgp.blurt.world", "<img style='max-width:80%' src='https://imgp.blurt.world");
+                html = html.replace("https://images.hive.blog", "<img style='max-width:80%' src='https://images.hive.blog");
+
+                const iframe = cell.querySelector(`#body-${bodyName}-endbody`);
+                if (iframe) {
+                    iframe.onload = () => {
+                        const doc = iframe.contentWindow.document;
+                        doc.body.style.color = 'white';
+                        doc.body.style.fontSize = '14px';
+                        doc.body.style.lineHeight = '18px';
+                        doc.body.style.padding = '10px';
+                        const style = doc.createElement('style');
+						style.textContent = `
+							a { color: #ffff00 !important; text-decoration: underline; }
+							a:hover { color: #ff9900 !important; }
+							`;
+						doc.head.appendChild(style);
+                    };
+                    iframe.srcdoc = `<!DOCTYPE html><html><body>${html}</body></html>`;
+                }
+
+                const titleEl = cell.querySelector(`#title-${bodyName}-endtitle`);
+                if (titleEl) titleEl.textContent = result.title.replace("@Graphene-Faucet - Soccer: ", "");
+
+                // Sub-iframe
+                const subIframe = cell.querySelector(`#sub-iframe-${bodyName}`);
+                if (cell.innerHTML.includes("Distributed")) {
+                    api.getContent(author, permlink + "pay", (err, payResult) => {
+                        if (payResult && payResult.parent_permlink === permlink) {
+						    const mdWithBreaks = window.markdownit({ breaks: true });
+                            const payHtml = mdWithBreaks.render(payResult.body)
+                            //const payHtml = md.render(payResult.body)
+                                .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                                .replace(".jpg", ".jpg'>").replace(".png", ".png'>")
+                                .replace("https://steemitimages.com", "<img style='max-width:80%' src='https://steemitimages.com")
+                                .replace("https://imgp.blurt.world", "<img style='max-width:80%' src='https://imgp.blurt.world")
+                                .replace("https://images.hive.blog", "<img style='max-width:80%' src='https://images.hive.blog");
+                            subIframe.srcdoc = `<!DOCTYPE html><html><body style='color:white;padding:15px;'>${payHtml}</body></html>`;
+                        }
+                    });
+                } else {
+                    const suffixes = ['', 'home', 'draw', 'away'];
+                    const promises = suffixes.map(suf => 
+                        new Promise(res => api.getActiveVotes(author, permlink + suf, (e, r) => res(r || [])))
+                    );
+                    Promise.all(promises).then(votes => {
+//                        const htmls = votes.map(arr => arr.filter(v => v.percent > 0).map(v => v.voter).sort());
+						const htmls = votes.map(arr => (Array.isArray(arr) ? arr : [])
+						.filter(v => v && v.percent > 0)
+						.map(v => v.voter)
+						.sort()
+						);
+                        const max = Math.max(...htmls.map(a => a.length));
+                        let rows = '';
+                        for (let j = 0; j < max; j++) {
+                            rows += `<tr><td>${htmls[0][j] || ''}</td><td>${htmls[1][j] || ''}</td><td>${htmls[2][j] || ''}</td><td>${htmls[3][j] || ''}</td></tr>`;
+                        }
+                        subIframe.srcdoc = `
+                            <!DOCTYPE html><html><head><style>
+                                table{width:100%;border-collapse:collapse;color:white;}
+                                th,td{border:1px solid white;padding:2px;text-align:left;}
+                                th{background:#333;}
+                            </style></head><body>
+                            <table><tr><th>Match</th><th>Home</th><th>Draw</th><th>Away</th></tr>${rows}</table>
+                            </body></html>`;
+                    });
+                }
+            });
+        });
+    });
+}
+
+function vote(perm, chain, msg) {
+    perm = perm.replace("graphene-faucet/@graphene-faucet/", "");
+    currentPermlink = perm;
+    currentChain = chain;
+
+    document.getElementById("chainLabel").textContent = chain;
+    document.getElementById("chainLabelk").textContent = chain;
+    document.getElementById("postingKeyWrapper").style.display = 'block';
+
+    const colore = currentChain === "HIVE" ? "#ffff00" : 
+                   currentChain === "BLURT" ? "#cc3333" : "#90ee90";
+    
+	const message = document.getElementById("message");
+	const messagenter = document.getElementById("messagenter");
+	const chainLabel = document.getElementById("chainLabel");
+	const chainLabelk = document.getElementById("chainLabelk");
+	const vote = document.getElementById("vote");
+	const cancel = document.getElementById("cancel");
+    const modal = document.getElementById("loginModal");
+    modal.style.setProperty('--blockchain-color', colore);	
+	
+    message.style.setProperty('color', colore);
+	messagenter.style.setProperty('color', colore);
+    chainLabel.style.setProperty('color', colore);
+    chainLabelk.style.setProperty('color', colore);
+    vote.style.setProperty('background', colore);
+    cancel.style.setProperty('background', colore);
+    if (currentChain.toLowerCase() === "steem" || currentChain.toLowerCase() === "hive" ) {
+       vote.style.setProperty('color', 'black');
+       cancel.style.setProperty('color', 'black');
+    } else  {
+       vote.style.setProperty('color', 'white');
+       cancel.style.setProperty('color', 'white');
+    }
+	
+    if (currentChain.toLowerCase() === "steem" && isMobileDevice()) {
+       document.getElementById("postingKeyWrapper").style.display = 'none';
+       document.getElementById("chainLabel").textContent = "Steem Keychain App";
+    }
+
+    if (window.whalevault && currentChain.toLowerCase() != "hive") {
+       document.getElementById("postingKeyWrapper").style.display = 'none';
+       document.getElementById("chainLabel").textContent = "Whalevault";
+    }
+
+    showLoginModal(chain, perm, msg);
+	
+}
+
+    // MODAL + LOGIN
+let currentPermlink = "", currentChain = "";
+	
+function showLoginModal(chain, permlink, msg) {
+    currentChain = chain;
+    currentPermlink = permlink.replace("graphene-faucet/@graphene-faucet/", "");
+    document.getElementById("message").textContent = msg;
+    
+    // Mostra sempre la key (tranne mobile Steem)
+//    document.getElementById("postingKey").labels[0].style.display = 'block';
+//    document.getElementById("postingKey").style.display = 'block';
+    
+    document.getElementById("loginModal").classList.add("show");
+}
+
+    function hideLoginModal() {
+        document.getElementById("loginModal").classList.remove("show");
+        document.getElementById("loginForm").reset();
+    }
+	
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const userin = document.getElementById("username").value.trim();
+//    const keyWrapper = document.getElementById("postingKeyWrapper");
+    const weight = parseInt(document.getElementById("voteWeight").value) * 100; // 1–100 → 100–10000
+
+    var ak = "";
+    if (!isMobileDevice() || currentChain.toLowerCase() != "steem") {
+       ak = document.getElementById("postingKey").value.trim();
+    }
+
+    hideLoginModal();
+//    keyWrapper.style.display = 'block'; // Reset per prossimo uso
+
+    if (!userin) {
+        alert("Username is required!");
+        return;
+    }
+
+    // MOBILE STEEM → KEYCHAIN
+    if (isMobileDevice() && currentChain.toLowerCase() === "steem") {
+        const data = new Date();
+        const jsonData = {
+            tmsmp: data.getTime(),
+            site: "Graphene-Faucet",
+            action: 'vote',
+            keytype: 'posting',
+            username: userin,
+            operation: {
+                voter: userin,
+                author: 'graphene-faucet',
+                permlink: currentPermlink,
+                weight: weight
+            }
+        };
+        const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+        const deepLink = `com.steemkeychain.app://operation?jsondata=${jsonString}`;
+
+        try {
+            window.location.href = deepLink;
+        } catch (error) {
+            alert('Failed to open Steem Keychain. Install it.');
+            window.location.href = 'https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing';
+        }
+        return;
+    }
+
+    // DESKTOP → RICHIEDE KEY
+    if (window.whalevault && currentChain.toLowerCase() != 'hive') {
+	    var ur = "";
+	    var blk = "";
+		const ops = [
+			[
+				"vote",
+				{
+					voter: userin,
+					author: "graphene-faucet",
+					permlink: currentPermlink,
+					weight: weight,
+				},
+			],
+		];
+		if (currentChain.toLowerCase() === 'steem') {
+			ur = "https://api.steemit.com";
+			blk = "stm:";
+		}
+//		if (currentChain.toLowerCase() === 'hive') {
+//			ur = "api.hive.blog";
+//			blk = "hiv:";
+//		}
+		if (currentChain.toLowerCase() === 'blurt') {
+			ur = "https://rpc.blurt.world/";
+			blk = "blt:";
+		}
+
+		window.whalevault.requestSignBuffer(
+		  "Graphene-Faucet",
+		  blk + userin,
+		  { url: ur, operations: ops },
+		  "Posting",
+		  "vote",
+		  "tx",
+		  function (response) {
+			if (response.success) {
+   			   alert("Vote done!");
+			} else {
+   			  const msg = response?.message || "Unknown error";
+			  alert("Vote error: " + msg);
+			}
+		  },
+		);
+	} else {
+    if (!ak) {
+        alert("Posting Key is required!");
+        return;
+    }
+    if (currentChain.toLowerCase() === 'steem') {
+		steem.broadcast.vote(ak, userin, "graphene-faucet", currentPermlink, weight, (err, res) => {
+			if (res) {
+				alert("Vote done!");
+			} else {
+				const msg = err?.message || "Unknown error";
+				if (msg.includes("Expected version")) {
+					alert("Invalid Username or Posting Key");
+				} else {
+					alert("Vote error: " + msg);
+				}
+			}
+		});
+	}
+
+    if (currentChain.toLowerCase() === 'hive') {
+		hive.broadcast.vote(ak, userin, "graphene-faucet", currentPermlink, weight, (err, res) => {
+			if (res) {
+				alert("Vote done!");
+			} else {
+				const msg = err?.message || "Unknown error";
+				if (msg.includes("Expected version")) {
+					alert("Invalid Username or Posting Key");
+				} else {
+					alert("Vote error: " + msg);
+				}
+			}
+		});
+	}
+
+    if (currentChain.toLowerCase() === 'blurt') {
+		blurt.broadcast.vote(ak, userin, "graphene-faucet", currentPermlink, weight, (err, res) => {
+			if (res) {
+				alert("Vote done!");
+			} else {
+				const msg = err?.message || "Unknown error";
+				if (msg.includes("Expected version")) {
+					alert("Invalid Username or Posting Key");
+				} else {
+					alert("Vote error: " + msg);
+				}
+			}
+		});
+	}
+  }
+});
+
+
+
+    window.onload = loadTable;
+</script>
+
+</body>
+</html>
