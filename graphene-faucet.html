@@ -619,6 +619,9 @@ var salbee = "";
 var salsports = "";
 var nf = new Intl.NumberFormat(); 
 let currentFilter = 'L1'; 
+var ism = false;
+var tiska = false;
+var tiwv = false;
 
 function isMobileDevice() {
   if (/Android|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
@@ -631,10 +634,10 @@ function isMobileDevice() {
 function thereIsSka() {
   if (!ism) {
      tiska = false;
+	 return;
   }
-  const deepLink = `com.steemkeychain.app://`;
   try {
-      window.location.href = deepLink;
+      const deepLink = `com.steemkeychain.app://`;
       tiska = true;
   } catch (error) {
       tiska = false;
@@ -648,10 +651,6 @@ function thereIsWv() {
      tiwv = false;
   }
 }
-
-var ism = false;
-var tiska = false;
-var tiwv = false;
 
 function applyFilter() {
     const select = document.getElementById('filterSelect');
