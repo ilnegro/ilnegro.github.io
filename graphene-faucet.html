@@ -532,10 +532,10 @@ link {
     <div class="header-content">
         <!-- SINISTRA -->
         <div class="buttons-left">
-            <a href="https://chrome.google.com/webstore/detail/whalevault/hcoigoaekhfajcoingnngmfjdidhmdon" 
-               target="_blank" class="button">WhaleVault Chromium</a>
-            <a href="https://addons.mozilla.org/it/firefox/addon/whalevault/" 
-               target="_blank" class="button">WhaleVault Firefox</a>
+            <a id="wvc" href="https://chrome.google.com/webstore/detail/whalevault/hcoigoaekhfajcoingnngmfjdidhmdon" 
+               target="_blank" class="button" style="display: none;">WhaleVault Chromium</a>
+            <a id="wvf" href="https://addons.mozilla.org/it/firefox/addon/whalevault/" 
+               target="_blank" class="button" style="display: none;">WhaleVault Firefox</a>
         </div>
 
         <!-- CENTRO: LOGO -->
@@ -545,8 +545,8 @@ link {
 
         <!-- DESTRA -->
         <div class="buttons-right">
-            <a href="https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing" 
-               target="_blank" class="button">Steem Keychain App</a>
+            <a id="skab" href="https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing" 
+               target="_blank" class="button" style="display: none;">Steem Keychain App</a>
             <select id="filterSelect" onchange="applyFilter()">
                 <option value="L1">Last Day</option>
                 <option value="L3">Last 3 days</option>
@@ -649,6 +649,16 @@ function thereIsWv() {
      tiwv = true;  
   } else  {
      tiwv = false;
+  }
+}
+
+function showbut() {
+  if (!ism && !tiwv) { 
+     document.getElementById('wvc').style.display = 'block';
+     document.getElementById('wvf').style.display = 'block';
+  }
+  if (ism && !tiska) { 
+     document.getElementById('skab').style.display = 'block';
   }
 }
 
@@ -1159,6 +1169,7 @@ window.onload = function() {
   isMobileDevice();
   thereIsSka();
   thereIsWv();
+  showbut();
   loadTable();
 };
 
@@ -1166,4 +1177,3 @@ window.onload = function() {
 
 </body>
 </html>
-
