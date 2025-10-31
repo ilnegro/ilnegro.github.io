@@ -878,11 +878,13 @@ function load() {
 
                 const md = window.markdownit();
                 let html = md.render(result.body);
-                html = html.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-                html = html.replace(".jpg", ".jpg'>").replace(".png", ".png'>");
-                html = html.replace("https://steemitimages.com", "<img style='max-width:80%' src='https://steemitimages.com");
-                html = html.replace("https://imgp.blurt.world", "<img style='max-width:80%' src='https://imgp.blurt.world");
-                html = html.replace("https://images.hive.blog", "<img style='max-width:80%' src='https://images.hive.blog");
+                html = html.replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">");
+				html = html.replaceAll("https://img.blurt.world/blurtimage/graphene-faucet/8653cf1def8f7d8237ac4cdf9b013f35047ac0dd.jpg","");
+                html = html.replaceAll(".jpg", ".jpg'> ").replaceAll(".png", ".png'> ");
+                html = html.replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://steemitimages.com");
+                html = html.replaceAll("https://imgp.blurt.world", " <img style='max-width:80%' src='https://imgp.blurt.world");
+                html = html.replaceAll("https://img.blurt.world", " <img style='max-width:80%' src='https://img.blurt.world");
+                html = html.replaceAll("https://images.hive.blog", " <img style='max-width:80%' src='https://images.hive.blog");
 
                 const iframe = cell.querySelector(`#body-${bodyName}-endbody`);
                 if (iframe) {
@@ -913,11 +915,12 @@ function load() {
 						    const mdWithBreaks = window.markdownit({ breaks: true });
                             const payHtml = mdWithBreaks.render(payResult.body)
                             //const payHtml = md.render(payResult.body)
-                                .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-                                .replace(".jpg", ".jpg'>").replace(".png", ".png'>")
-                                .replace("https://steemitimages.com", "<img style='max-width:80%' src='https://steemitimages.com")
-                                .replace("https://imgp.blurt.world", "<img style='max-width:80%' src='https://imgp.blurt.world")
-                                .replace("https://images.hive.blog", "<img style='max-width:80%' src='https://images.hive.blog");
+                                .replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">")
+                                .replaceAll(".jpg", ".jpg'> ").replaceAll(".png", ".png'> ")
+                                .replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://steemitimages.com")
+                                .replaceAll("https://imgp.blurt.world", " <img style='max-width:80%' src='https://imgp.blurt.world")
+                                .replaceAll("https://img.blurt.world", " <img style='max-width:80%' src='https://img.blurt.world")
+                                .replaceAll("https://images.hive.blog", " <img style='max-width:80%' src='https://images.hive.blog");
                             subIframe.srcdoc = `<!DOCTYPE html><html><body style='color:white;padding:15px;'>${payHtml}</body></html>`;
                         }
                     });
