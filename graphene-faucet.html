@@ -557,6 +557,8 @@ link {
                 <option value="A">Active</option>
                 <option value="D">Distributed</option>
                 <option value="F">Finished</option>
+                <option value="G">Giveaway Rank</option>
+                <option value="M">Multistrike Rank</option>
             </select>
         </div>
     </div>
@@ -622,6 +624,7 @@ let currentFilter = 'L1';
 var ism = false;
 var tiska = false;
 var tiwv = false;
+var blkdata = [];
 
 function isMobileDevice() {
   if (/Android|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
@@ -767,7 +770,8 @@ function toggleColumn(col) {
 }
 
 function createEventCell(item) {
-    const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
+ if (currentFilter != "G" && currentFilter != "M") {
+	const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
     const colore = item.blockchain === "HIVE" ? "#ffff00" : 
                    item.blockchain === "BLURT" ? "#cc3333" : "#90ee90";
     const chain = item.blockchain;
@@ -815,6 +819,20 @@ function createEventCell(item) {
             </div>
         </div>
     `;
+  } else {
+	const bodyName = document.getElementById("filterSelect").selectedOptions[0].innerText.replaceAll(" ", ""); 
+	const titolo =  document.getElementById("filterSelect").selectedOptions[0].innerText; 
+    const colore = item.blockchain === "HIVE" ? "#ffff00" : 
+                   item.blockchain === "BLURT" ? "#cc3333" : "#90ee90";
+    const chain = item.blockchain;
+    return `
+        <div class="cell-content">
+            <h2 id="title-${bodyName}-endtitle" style="color:${colore}; margin-bottom: 4px;">${titolo}</h2>
+            <iframe id="body-${bodyName}-endbody" class="main-iframe" srcdoc=""></iframe>
+            </div>
+        </div>
+    `;
+  }	
 }
 
     async function loadTable() {
@@ -825,10 +843,18 @@ function createEventCell(item) {
             const blockchainData = { 'STEEM': [], 'HIVE': [], 'BLURT': [] };
             data.forEach(item => blockchainData[item.blockchain].push(item));
 
+            blkdata = blockchainData;
+			
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            const maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
+//            const maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
 
+            var maxRows = 1;
+
+			if (currentFilter != "G" && currentFilter != "M") {
+			   maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
+            }
+	
 for (let i = 0; i < maxRows; i++) {
     const row = document.createElement('div');
     row.className = 'table-body-row';
@@ -860,7 +886,7 @@ function load() {
         ['steem', 'hive', 'blurt'].forEach((chain, colIdx) => {
             const cell = cells[colIdx];
             if (!cell || cell.innerHTML.includes('—')) return;
-
+		if (currentFilter != "G" && currentFilter != "M") {
             const str = cell.innerHTML;
             const ini = str.indexOf("body-");
             const fin = str.indexOf("-endbody");
@@ -930,7 +956,6 @@ function load() {
                         new Promise(res => api.getActiveVotes(author, permlink + suf, (e, r) => res(r || [])))
                     );
                     Promise.all(promises).then(votes => {
-//                        const htmls = votes.map(arr => arr.filter(v => v.percent > 0).map(v => v.voter).sort());
 						const htmls = votes.map(arr => (Array.isArray(arr) ? arr : [])
 						.filter(v => v && v.percent > 0)
 						.map(v => v.voter)
@@ -952,7 +977,108 @@ function load() {
                     });
                 }
             });
+		
+		
+        } else  {
+            const str = cell.innerHTML;
+            const ini = str.indexOf("body-");
+            const fin = str.indexOf("-endbody");
+            if (ini === -1 || fin === -1) return;
+            const bodyName = str.substr(ini + 5, fin - ini - 5);
+
+                const iframe = cell.querySelector(`#body-${bodyName}-endbody`);
+                if (iframe) {
+                    iframe.onload = () => {
+                        const doc = iframe.contentWindow.document;
+                        doc.body.style.color = 'white';
+                        doc.body.style.fontSize = '14px';
+                        doc.body.style.lineHeight = '18px';
+                        doc.body.style.padding = '10px';
+                        const style = doc.createElement('style');
+						style.textContent = `
+							a { color: #ffff00 !important; text-decoration: underline; }
+							a:hover { color: #ff9900 !important; }
+							`;
+						doc.head.appendChild(style);
+                    };
+             		if (currentFilter === "M") {
+						let rows = '';
+						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
+   					        const user = blkdata[chain.toUpperCase()][j].winner || '';
+							const score = blkdata[chain.toUpperCase()][j].score || '0';
+							   rows += `<tr><td style="text-align:left;">${user}</td><td>${score}</td></tr>`;
+						}
+
+						iframe.srcdoc = `
+							<!DOCTYPE html>
+							<html>
+							<head>
+								<style>
+									table { width: 100%; border-collapse: collapse; color: white; }
+									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 13px; }
+									th { background: #333; }
+								</style>
+							</head>
+							<body>
+								<table>
+									<tr><th style="text-align:left;">User</th><th style="text-align:left;">Strikes</th></tr>
+									${rows}
+								</table>
+							</body>
+							</html>`;
+                }
+             		if (currentFilter === "G") {
+						let rows = '';
+						
+                        if (chain === "hive") { 
+       					   inte = "<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>Giweavay</th><th  style='text-align:left;'>Sports</th><th style='text-align:left;'>Bee</tr>";
+   						} else { 
+						   inte = "<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>Giweavay</th>";
+   						}
+
+						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
+                            if (chain === "hive") { 
+								const id = blkdata[chain.toUpperCase()][j].id || '0';
+								const winner = blkdata[chain.toUpperCase()][j].winner || '';
+								const num = blkdata[chain.toUpperCase()][j].num || '0';
+								const amount = blkdata[chain.toUpperCase()][j].amount || '0';
+								const sports = blkdata[chain.toUpperCase()][j].sports || '0';
+								const bee = blkdata[chain.toUpperCase()][j].bee || '0';
+								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td><td>${sports}</td><td>${bee}</td></tr>`;
+    						} else { 
+								const id = blkdata[chain.toUpperCase()][j].id || '0';
+								const winner = blkdata[chain.toUpperCase()][j].winner || '';
+								const num = blkdata[chain.toUpperCase()][j].num || '0';
+								const amount = blkdata[chain.toUpperCase()][j].amount || '0';
+								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td></tr>`;
+    						}
+
+						}
+
+						iframe.srcdoc = `
+							<!DOCTYPE html>
+							<html>
+							<head>
+								<style>
+									table { width: 100%; border-collapse: collapse; color: white; }
+									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 13px; }
+									th { background: #333; }
+								</style>
+							</head>
+							<body>
+								<table>
+									${inte}
+									${rows}
+								</table>
+							</body>
+							</html>`;
+                }
+
+
+                }
+                }
         });
+
     });
 }
 
