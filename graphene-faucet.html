@@ -621,34 +621,37 @@ var nf = new Intl.NumberFormat();
 let currentFilter = 'L1'; 
 
 function isMobileDevice() {
-  return /Android|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (/Android|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+     ism = true;
+  } else  {
+     ism = false;
+  }
 }
 
 function thereIsSka() {
   if (!ism) {
-     return false;  
+     tiska = false;
   }
   const deepLink = `com.steemkeychain.app://`;
   try {
       window.location.href = deepLink;
-	  return true;
+      tiska = true;
   } catch (error) {
-	  return false;
+      tiska = false;
   }
 }
 
 function thereIsWv() {
   if (window.whalevault) {
-     return true;  
+     tiwv = true;  
   } else  {
-     return false;  
+     tiwv = false;
   }
 }
 
-
-var ism = isMobileDevice();
-var tiska = thereIsSka();
-var tiwv = thereIsWv();
+var ism = false;
+var tiska = false;
+var tiwv = false;
 
 function applyFilter() {
     const select = document.getElementById('filterSelect');
@@ -1152,7 +1155,14 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
   }
 });
 
- window.onload = loadTable;
+// window.onload = loadTable;
+window.onload = function() {
+  isMobileDevice();
+  thereIsSka();
+  thereIsWv();
+  loadTable;
+};
+
 </script>
 
 </body>
