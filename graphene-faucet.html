@@ -956,6 +956,7 @@ function load() {
                         new Promise(res => api.getActiveVotes(author, permlink + suf, (e, r) => res(r || [])))
                     );
                     Promise.all(promises).then(votes => {
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#cc3333" : "#90ee90";	
 						const htmls = votes.map(arr => (Array.isArray(arr) ? arr : [])
 						.filter(v => v && v.percent > 0)
 						.map(v => v.voter)
@@ -968,7 +969,7 @@ function load() {
                         }
                         subIframe.srcdoc = `
                             <!DOCTYPE html><html><head><style>
-                                table{width:100%;border-collapse:collapse;color:white;}
+                                table{width:100%;border-collapse:collapse;color:${colore};}
                                 th,td{border:1px solid white;padding:2px;text-align:left;}
                                 th{background:#333;}
                             </style></head><body>
