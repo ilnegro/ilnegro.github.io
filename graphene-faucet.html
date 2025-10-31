@@ -620,6 +620,36 @@ var salsports = "";
 var nf = new Intl.NumberFormat(); 
 let currentFilter = 'L1'; 
 
+function isMobileDevice() {
+  return /Android|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function thereIsSka() {
+  if (!ism) {
+     return false;  
+  }
+  const deepLink = `com.steemkeychain.app://`;
+  try {
+      window.location.href = deepLink;
+	  return true;
+  } catch (error) {
+	  return false;
+  }
+}
+
+function thereIsWv() {
+  if (window.whalevault) {
+     return true;  
+  } else  {
+     return false;  
+  }
+}
+
+
+var ism = isMobileDevice();
+var tiska = thereIsSka();
+var tiwv = thereIsWv();
+
 function applyFilter() {
     const select = document.getElementById('filterSelect');
     currentFilter = select.value; 
@@ -663,13 +693,13 @@ getBalance("BEE").then(result => {
    salbee = result;
 });
 getBalance("SPORTS").then(result => {
-   salsports = result;
+   salsports = result / 100000;
 });
 
 
   hive.api.getAccounts(['multistrike'], function(err, response) {
     if (!err) {
-	  document.getElementById('msh').textContent = nf.format(Number(response[0].balance.replace(" HIVE", ""))) + " HIVE\n" + nf.format(Number(salsports),0) + " SPORTS\n " + nf.format(Number(salbee)) + " BEE";
+	  document.getElementById('msh').textContent = nf.format(Number(response[0].balance.replace(" HIVE", ""))) + " HIVE\n" + nf.format(Number(salsports),0) + "M SPORTS\n " + nf.format(Number(salbee)) + " BEE";
     }  
     });
 	
@@ -678,10 +708,6 @@ getBalance("SPORTS").then(result => {
 	  document.getElementById('msb').textContent = nf.format(Number(response[0].balance.replace(" BLURT",""))) + " BLURT";
     }
   });
-
-    function isMobileDevice() {
-        return /Android|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
 
 	document.getElementById("voteWeight")?.addEventListener("input", function() {
 		document.getElementById("weightValue").textContent = this.value;
@@ -950,12 +976,12 @@ function vote(perm, chain, msg) {
        cancel.style.setProperty('color', 'white');
     }
 	
-    if (currentChain.toLowerCase() === "steem" && isMobileDevice()) {
+    if (currentChain.toLowerCase() === "steem" && ism) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
 
-    if (window.whalevault && currentChain.toLowerCase() != "hive") {
+    if (tiwv && currentChain.toLowerCase() != "hive") {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Whalevault";
     }
@@ -991,7 +1017,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     const weight = parseInt(document.getElementById("voteWeight").value) * 100; // 1–100 → 100–10000
 
     var ak = "";
-    if (!isMobileDevice() || currentChain.toLowerCase() != "steem") {
+    if (!ism || currentChain.toLowerCase() != "steem") {
        ak = document.getElementById("postingKey").value.trim();
     }
 
@@ -1004,7 +1030,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     }
 
     // MOBILE STEEM → KEYCHAIN
-    if (isMobileDevice() && currentChain.toLowerCase() === "steem") {
+    if (ism && tiska && currentChain.toLowerCase() === "steem") {
         const data = new Date();
         const jsonData = {
             tmsmp: data.getTime(),
@@ -1031,8 +1057,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
         return;
     }
 
-    // DESKTOP → RICHIEDE KEY
-    if (window.whalevault && currentChain.toLowerCase() != 'hive') {
+    if (tiwv) {
 	    var ur = "";
 	    var blk = "";
 		const ops = [
@@ -1050,10 +1075,10 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
 			ur = "https://api.steemit.com";
 			blk = "stm:";
 		}
-//		if (currentChain.toLowerCase() === 'hive') {
-//			ur = "api.hive.blog";
-//			blk = "hiv:";
-//		}
+		if (currentChain.toLowerCase() === 'hive') {
+			ur = "https://api.hive.blog";
+			blk = "hiv:";
+		}
 		if (currentChain.toLowerCase() === 'blurt') {
 			ur = "https://rpc.blurt.world/";
 			blk = "blt:";
@@ -1127,11 +1152,8 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
   }
 });
 
-
-
-    window.onload = loadTable;
+ window.onload = loadTable;
 </script>
 
 </body>
-
 </html>
