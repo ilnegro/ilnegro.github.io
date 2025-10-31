@@ -1002,6 +1002,7 @@ function load() {
 						doc.head.appendChild(style);
                     };
              		if (currentFilter === "M") {
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#cc3333" : "#90ee90";	
 						let rows = '';
 						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
    					        const user = blkdata[chain.toUpperCase()][j].winner || '';
@@ -1014,8 +1015,8 @@ function load() {
 							<html>
 							<head>
 								<style>
-									table { width: 100%; border-collapse: collapse; color: white; }
-									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 13px; }
+									table { width: 100%; border-collapse: collapse; color: ${colore}; }
+									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 16px; }
 									th { background: #333; }
 								</style>
 							</head>
@@ -1028,6 +1029,7 @@ function load() {
 							</html>`;
                 }
              		if (currentFilter === "G") {
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#cc3333" : "#90ee90";	
 						let rows = '';
 						
                         if (chain === "hive") { 
@@ -1041,15 +1043,15 @@ function load() {
 								const id = blkdata[chain.toUpperCase()][j].id || '0';
 								const winner = blkdata[chain.toUpperCase()][j].winner || '';
 								const num = blkdata[chain.toUpperCase()][j].num || '0';
-								const amount = blkdata[chain.toUpperCase()][j].amount || '0';
-								const sports = blkdata[chain.toUpperCase()][j].sports || '0';
-								const bee = blkdata[chain.toUpperCase()][j].bee || '0';
+								const amount = nf.format(Number(blkdata[chain.toUpperCase()][j].amount)) || '0';
+								const sports = nf.format(Number(blkdata[chain.toUpperCase()][j].sports)) || '0';
+								const bee = nf.format(Number(blkdata[chain.toUpperCase()][j].bee)) || '0';
 								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td><td>${sports}</td><td>${bee}</td></tr>`;
     						} else { 
 								const id = blkdata[chain.toUpperCase()][j].id || '0';
 								const winner = blkdata[chain.toUpperCase()][j].winner || '';
 								const num = blkdata[chain.toUpperCase()][j].num || '0';
-								const amount = blkdata[chain.toUpperCase()][j].amount || '0';
+								const amount = nf.format(Number(blkdata[chain.toUpperCase()][j].amount)) || '0';
 								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td></tr>`;
     						}
 
@@ -1060,8 +1062,8 @@ function load() {
 							<html>
 							<head>
 								<style>
-									table { width: 100%; border-collapse: collapse; color: white; }
-									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 13px; }
+									table { width: 100%; border-collapse: collapse; color: ${colore}; }
+									th, td { border: 1px solid white; padding: 4px; text-align: right; font-size: 16px; }
 									th { background: #333; }
 								</style>
 							</head>
