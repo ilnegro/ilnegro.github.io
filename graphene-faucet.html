@@ -983,7 +983,7 @@ function vote(perm, chain, msg) {
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
 
-    if (tiwv && currentChain.toLowerCase() != "hive") {
+    if (tiwv) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Whalevault";
     }
@@ -1159,7 +1159,7 @@ window.onload = function() {
   isMobileDevice();
   thereIsSka();
   thereIsWv();
-  loadTable;
+  loadTable();
 };
 
 </script>
