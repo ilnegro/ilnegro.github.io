@@ -1118,7 +1118,8 @@ function vote(perm, chain, msg) {
        cancel.style.setProperty('color', 'white');
     }
 	
-    if (currentChain.toLowerCase() === "steem" && ism) {
+//    if (currentChain.toLowerCase() === "steem" && ism) {
+    if (ism) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
@@ -1159,7 +1160,8 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     const weight = parseInt(document.getElementById("voteWeight").value) * 100; // 1–100 → 100–10000
 
     var ak = "";
-    if (!ism || currentChain.toLowerCase() != "steem") {
+//    if (!ism || currentChain.toLowerCase() != "steem") {
+    if (!ism || !tiska) {
        ak = document.getElementById("postingKey").value.trim();
     }
 
