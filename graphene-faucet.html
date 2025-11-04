@@ -639,6 +639,7 @@ function thereIsSka() {
   }
   try {
       const deepLink = `com.steemkeychain.app://`;
+      window.location.href = deepLink;
       tiska = true;
   } catch (error) {
       tiska = false;
@@ -1311,3 +1312,4 @@ window.onload = function() {
 
 </body>
 </html>
+
