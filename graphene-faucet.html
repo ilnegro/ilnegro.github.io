@@ -638,14 +638,42 @@ function thereIsSka() {
 	 return;
   }
   try {
-      tiska = false;
       const deepLink = `com.steemkeychain.app://operation?`;
-      window.location.href = deepLink;
       tiska = true;
   } catch (error) {
       tiska = false;
   }
 }
+
+const thereIsSka = () => {
+  const deepLink = `com.steemkeychain.app://`;
+
+  tiska = false;
+
+  window.location.href = deepLink;
+
+  setTimeout(() => {
+    if (!opened && document.hidden === false) {
+      alert('App non installata. Installa Steem Keychain.');
+      window.location.href = 'https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing';
+    }
+  }, 1500);
+
+  // Se l'app apre → pagina nascosta → opened = true
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      tiska = true;
+    }
+  };
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+
+  // Pulizia
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, 2000);
+};
+
 
 function thereIsWv() {
   if (window.whalevault) {
@@ -1313,6 +1341,3 @@ window.onload = function() {
 
 </body>
 </html>
-
-
-
