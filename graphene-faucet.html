@@ -714,11 +714,13 @@ function thereIsWv() {
      document.getElementById('bWV').style.display = 'block';
 	 const targetBtn = document.querySelector(`.img-btn[data-id="2"`);
      targetBtn.classList.add('active');
-  } else  {
+  } else {
      tiwv = false;
      document.getElementById('bWV').style.display = 'none';
-	 const targetBtn = document.querySelector(`.img-btn[data-id="3"`);
-     targetBtn.classList.add('active');
+     if (!ism) {
+   	    const targetBtn = document.querySelector(`.img-btn[data-id="3"`);
+        targetBtn.classList.add('active');
+     }
   }
 }
 
@@ -1252,7 +1254,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
 
     var ak = "";
 //    if (!ism || currentChain.toLowerCase() != "steem") {
-    if (!ism || !tiska) {
+    if (document.querySelector('.img-btn.active').dataset.id === "3") {
        ak = document.getElementById("postingKey").value.trim();
     }
 
