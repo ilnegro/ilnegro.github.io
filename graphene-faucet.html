@@ -522,6 +522,52 @@ link {
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
+.button-container {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin: 1px 0;
+}
+
+.img-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 3px solid transparent;
+  background: none;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  opacity: 0.3; /* Inattivo di default */
+}
+
+.img-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* STATO ATTIVO */
+.img-btn.active {
+  opacity: 1;
+  border: 3px solid white;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.user-container {
+    position: relative;
+    background: rgba(0,0,0,0.8); 
+    font-family: Arial, sans-serif; 
+    width: 100%;
+	padding: 10px;
+    height: 40px;
+    margin: 1px 0;
+	border: 1px solid #555;
+    border-radius: 6px; 
+	color: white; 
+	font-size: 16px;
+}
     </style>
 </head>
 <body>
@@ -530,7 +576,9 @@ link {
     <div class="header-content">
         <!-- SINISTRA -->
         <div class="buttons-left">
-            <a id="wvc" href="https://chrome.google.com/webstore/detail/whalevault/hcoigoaekhfajcoingnngmfjdidhmdon" 
+            <a id="skab" href="https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing" 
+               target="_blank" class="button" style="display: none;">Steem Keychain App</a>
+  		    <a id="wvc" href="https://chrome.google.com/webstore/detail/whalevault/hcoigoaekhfajcoingnngmfjdidhmdon" 
                target="_blank" class="button" style="display: none;">WhaleVault Chromium</a>
             <a id="wvf" href="https://addons.mozilla.org/it/firefox/addon/whalevault/" 
                target="_blank" class="button" style="display: none;">WhaleVault Firefox</a>
@@ -543,8 +591,18 @@ link {
 
         <!-- DESTRA -->
         <div class="buttons-right">
-            <a id="skab" href="https://drive.google.com/file/d/1OhHaem4VOg2s1BLC53CCTQ-yPnY4kfQ4/view?usp=sharing" 
-               target="_blank" class="button" style="display: none;">Steem Keychain App</a>
+			<div class="button-container">
+			  <button class="img-btn" data-id="1" id="bSKA">
+				<img src="https://ilnegro.github.io/SKA.png" alt="Opzione 1">
+			  </button>
+			  <button class="img-btn" data-id="2" id="bWV">
+				<img src="https://ilnegro.github.io/WV.png" alt="Opzione 2">
+			  </button>
+			  <button class="img-btn" data-id="3" id="bPK">
+				<img src="https://ilnegro.github.io/PK.jpg" alt="Opzione 3">
+			  </button>
+			</div>
+			<input class="user-container" type="text" id="user" placeholder="e.g. yourusername">
             <select id="filterSelect" onchange="applyFilter()">
                 <option value="L1">Last Day</option>
                 <option value="L3">Last 3 days</option>
@@ -620,46 +678,55 @@ var salsports = "";
 var nf = new Intl.NumberFormat(); 
 let currentFilter = 'L1'; 
 var ism = false;
-var tiska = false;
 var tiwv = false;
 var blkdata = [];
+
+document.querySelectorAll('.img-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Rimuovi active da tutti
+    document.querySelectorAll('.img-btn').forEach(b => {
+      b.classList.remove('active');
+    });
+    // Aggiungi active al cliccato
+    btn.classList.add('active');
+  });
+});
 
 function isMobileDevice() {
   if (/Android|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
      ism = true;
+     document.getElementById('bSKA').style.display = 'block';
+     document.getElementById('bWV').style.display = 'none';
+	 const targetBtn = document.querySelector(`.img-btn[data-id="1"`);
+     targetBtn.classList.add('active');
   } else  {
      ism = false;
+     document.getElementById('bSKA').style.display = 'none';
+     document.getElementById('bWV').style.display = 'block';
+	 const targetBtn = document.querySelector(`.img-btn[data-id="2"`);
+     targetBtn.classList.add('active');
   }
 }
-
-function thereIsSka() {
-  if (!ism) {
-     tiska = false;
-	 return;
-  }
-  try {
-      const deepLink = `com.steemkeychain.app://operation?`;
-      tiska = true;
-  } catch (error) {
-      tiska = false;
-  }
-}
-
 
 function thereIsWv() {
   if (window.whalevault) {
      tiwv = true;  
+     document.getElementById('bWV').style.display = 'block';
+	 const targetBtn = document.querySelector(`.img-btn[data-id="2"`);
+     targetBtn.classList.add('active');
   } else  {
      tiwv = false;
+     document.getElementById('bWV').style.display = 'none';
+	 const targetBtn = document.querySelector(`.img-btn[data-id="3"`);
+     targetBtn.classList.add('active');
   }
 }
 
 function showbut() {
-  if (!ism && !tiwv) { 
+  if (!ism) { 
      document.getElementById('wvc').style.display = 'block';
      document.getElementById('wvf').style.display = 'block';
   }
-//  if (ism && !tiska) { 
   if (ism) { 
      document.getElementById('skab').style.display = 'block';
   }
@@ -964,16 +1031,31 @@ function load() {
 						);
                         const max = Math.max(...htmls.map(a => a.length));
                         let rows = '';
+						let ce = ["N","N","N","N"];
                         for (let j = 0; j < max; j++) {
-                            rows += `<tr><td>${htmls[0][j] || ''}</td><td>${htmls[1][j] || ''}</td><td>${htmls[2][j] || ''}</td><td>${htmls[3][j] || ''}</td></tr>`;
+						    const cell = (value, col) => {
+                                  if (value === document.getElementById("user").value) {
+									 ce[col]= "S";
+                                     return `<span style="color: white; font-weight: bold;">${value}</span>`;
+                                  }
+                                  return value || '';
+                            }; 
+				            rows += `<tr><td>${cell(htmls[0][j],0)}</td><td>${cell(htmls[1][j],1)}</td><td>${cell(htmls[2][j],2)}</td><td>${cell(htmls[3][j],3)}</td></tr>`;
+//                            rows += `<tr><td>${htmls[0][j] || ''}</td><td>${htmls[1][j] || ''}</td><td>${htmls[2][j] || ''}</td><td>${htmls[3][j] || ''}</td></tr>`;
                         }
+						const inte = (value, col) => {
+							  if (ce[col] === "S") {
+								 return `<span style="color: white; font-weight: bold;">${value}</span>`;
+							  }
+							  return value || '';
+						}; 
                         subIframe.srcdoc = `
                             <!DOCTYPE html><html><head><style>
                                 table{width:100%;border-collapse:collapse;color:${colore};}
                                 th,td{border:1px solid white;padding:2px;text-align:left;}
                                 th{background:#333;}
                             </style></head><body>
-                            <table><tr><th>Match</th><th>Home</th><th>Draw</th><th>Away</th></tr>${rows}</table>
+                            <table><tr><th>${inte("Match",0)}</th><th>${inte("Home",1)}</th><th>${inte("Draw",2)}</th><th>${inte("Away",3)}</th></tr>${rows}</table>
                             </body></html>`;
                     });
                 }
@@ -1034,9 +1116,9 @@ function load() {
 						let rows = '';
 						
                         if (chain === "hive") { 
-       					   inte = "<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>Giweavay</th><th  style='text-align:left;'>Sports</th><th style='text-align:left;'>Bee</tr>";
+       					   inte = `<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>${chain.toUpperCase()}</th><th  style='text-align:left;'>Sports</th><th style='text-align:left;'>Bee</tr>`;
    						} else { 
-						   inte = "<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>Giweavay</th>";
+						   inte = `<tr><th>Id</th><th style='text-align:left;'>User</th><th style='text-align:left;'>Num</th><th style='text-align:left;'>${chain.toUpperCase()}</th>`;
    						}
 
 						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
@@ -1121,12 +1203,14 @@ function vote(perm, chain, msg) {
     }
 	
 //    if (currentChain.toLowerCase() === "steem" && ism) {
-    if (ism) {
+    if (document.querySelector('.img-btn.active') === 1) { 
+//    if (ism) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
 
-    if (tiwv) {
+    if (document.querySelector('.img-btn.active') === 2) { 
+//    if (tiwv) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Whalevault";
     }
@@ -1142,6 +1226,10 @@ function showLoginModal(chain, permlink, msg) {
     currentChain = chain;
     currentPermlink = permlink.replace("graphene-faucet/@graphene-faucet/", "");
     document.getElementById("message").textContent = msg;
+    if (document.getElementById("user").value != "")  {
+    	document.getElementById("username").textContent = document.getElementById("user").value;
+    	document.getElementById("username").value = document.getElementById("user").value;
+    }	
     
     // Mostra sempre la key (tranne mobile Steem)
 //    document.getElementById("postingKey").labels[0].style.display = 'block';
@@ -1177,7 +1265,8 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
 
     // MOBILE STEEM → KEYCHAIN
 //    if (ism && tiska && currentChain.toLowerCase() === "steem") {
-    if (ism && tiska) {
+//    if (ism && tiska) {
+    if (document.querySelector('.img-btn.active') === 1) { 
         const data = new Date();
         const jsonData = {
             tmsmp: data.getTime(),
@@ -1205,7 +1294,8 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
         return;
     }
 
-    if (tiwv) {
+    if (document.querySelector('.img-btn.active') === 2) { 
+//    if (tiwv) {
 	    var ur = "";
 	    var blk = "";
 		const ops = [
@@ -1303,7 +1393,6 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
 // window.onload = loadTable;
 window.onload = function() {
   isMobileDevice();
-  thereIsSka();
   thereIsWv();
   showbut();
   loadTable();
