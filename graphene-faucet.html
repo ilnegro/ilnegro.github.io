@@ -1203,14 +1203,14 @@ function vote(perm, chain, msg) {
     }
 	
 //    if (currentChain.toLowerCase() === "steem" && ism) {
-    if (document.querySelector('.img-btn.active').dataset.id === 1) { 
+    if (document.querySelector('.img-btn.active').dataset.id === "1") { 
 	
 //    if (ism) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
 
-    if (document.querySelector('.img-btn.active').dataset.id === 2) { 
+    if (document.querySelector('.img-btn.active').dataset.id === "2") { 
 //    if (tiwv) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Whalevault";
@@ -1267,7 +1267,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     // MOBILE STEEM → KEYCHAIN
 //    if (ism && tiska && currentChain.toLowerCase() === "steem") {
 //    if (ism && tiska) {
-    if (document.querySelector('.img-btn.active').dataset.id === 1) { 
+    if (document.querySelector('.img-btn.active').dataset.id === "1") { 
         const data = new Date();
         const jsonData = {
             tmsmp: data.getTime(),
@@ -1295,7 +1295,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
         return;
     }
 
-    if (document.querySelector('.img-btn.active').dataset.id === 2) { 
+    if (document.querySelector('.img-btn.active').dataset.id === "2") { 
 //    if (tiwv) {
 	    var ur = "";
 	    var blk = "";
