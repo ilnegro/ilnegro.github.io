@@ -1092,7 +1092,13 @@ function load() {
 						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
    					        const user = blkdata[chain.toUpperCase()][j].winner || '';
 							const score = blkdata[chain.toUpperCase()][j].score || '0';
-							   rows += `<tr><td style="text-align:left;">${user}</td><td>${score}</td></tr>`;
+						    const cell = (value,user) => {
+                                  if (user === document.getElementById("user").value) {
+                                     return `<span style="color: white; font-weight: bold;">${value}</span>`;
+                                  }
+                                  return value || '';
+                            }; 
+							   rows += `<tr><td style="text-align:left;">${cell(user, user)}</td><td>${cell(score, user)}</td></tr>`;
 						}
 
 						iframe.srcdoc = `
@@ -1124,6 +1130,12 @@ function load() {
    						}
 
 						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
+						    const cell = (value,user) => {
+                                  if (user === document.getElementById("user").value) {
+                                     return `<span style="color: white; font-weight: bold;">${value}</span>`;
+                                  }
+                                  return value || '';
+                            }; 
                             if (chain === "hive") { 
 								const id = blkdata[chain.toUpperCase()][j].id || '0';
 								const winner = blkdata[chain.toUpperCase()][j].winner || '';
@@ -1131,13 +1143,13 @@ function load() {
 								const amount = nf.format(Number(blkdata[chain.toUpperCase()][j].amount)) || '0';
 								const sports = nf.format(Number(blkdata[chain.toUpperCase()][j].sports)) || '0';
 								const bee = nf.format(Number(blkdata[chain.toUpperCase()][j].bee)) || '0';
-								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td><td>${sports}</td><td>${bee}</td></tr>`;
+								rows += `<tr><td>${cell(id, winner)}</td><td style="text-align:left;">${cell(winner, winner)}</td><td>${cell(num, winner)}</td><td>${cell(amount, winner)}</td><td>${cell(sports, winner)}</td><td>${cell(bee, winner)}</td></tr>`;
     						} else { 
 								const id = blkdata[chain.toUpperCase()][j].id || '0';
 								const winner = blkdata[chain.toUpperCase()][j].winner || '';
 								const num = blkdata[chain.toUpperCase()][j].num || '0';
 								const amount = nf.format(Number(blkdata[chain.toUpperCase()][j].amount)) || '0';
-								rows += `<tr><td>${id}</td><td style="text-align:left;">${winner}</td><td>${num}</td><td>${amount}</td></tr>`;
+								rows += `<tr><td>${cell(id, winner)}</td><td style="text-align:left;">${cell(winner, winner)}</td><td>${cell(num, winner)}</td><td>${cell(amount, winner)}</td></tr>`;
     						}
 
 						}
