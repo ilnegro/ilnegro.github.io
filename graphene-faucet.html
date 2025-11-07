@@ -623,7 +623,7 @@ link {
 <div class="ms-header">
     <div id="mss" title="Steem Multistrike Actual Value" style="color:#90ee90; text-align: center; border: 1px solid #555;" ></div>
     <div id="msh" title="Hive Multistrike Actual Value" style="white-space: pre-line; line-height: 1; color:#ffff00; text-align: center; border: 1px solid #555;"></div>
-    <div id="msb" title="Blurt Multistrike Actual Value" style="color:#FF3333; text-align: center; border: 1px solid #555;"></div>
+    <div id="msb" title="Blurt Multistrike Actual Value" style="color:#FF6600; text-align: center; border: 1px solid #555;"></div>
 </div>
 
 <div class="table-container">
@@ -631,7 +631,7 @@ link {
     <div class="table-header">
         <div id="titolosteem" title="Click to Expad/collapse Steem" class="col-steem th" onclick="toggleColumn('steem')" style="color:#90ee90;">Steem</div>
         <div id="titolohive" title="Click to Expad/collapse Hive" class="col-hive th" onclick="toggleColumn('hive')" style="color:#ffff00;">Hive</div>
-        <div id="titoloblurt" title="Click to Expad/collapse Blurt" class="col-blurt th" onclick="toggleColumn('blurt')" style="color:#FF3333;">Blurt</div>
+        <div id="titoloblurt" title="Click to Expad/collapse Blurt" class="col-blurt th" onclick="toggleColumn('blurt')" style="color:#FF6600;">Blurt</div>
     </div>
 
     <!-- CORPO CON SCROLL -->
@@ -842,7 +842,7 @@ function createEventCell(item) {
  if (currentFilter != "G" && currentFilter != "M") {
 	const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
     const colore = item.blockchain === "HIVE" ? "#ffff00" : 
-                   item.blockchain === "BLURT" ? "#FF3333" : "#90ee90";
+                   item.blockchain === "BLURT" ? "#FF6600" : "#90ee90";
     const chain = item.blockchain;
 
     const permh = item.perm + 'home';
@@ -892,7 +892,7 @@ function createEventCell(item) {
 	const bodyName = document.getElementById("filterSelect").selectedOptions[0].innerText.replaceAll(" ", ""); 
 	const titolo =  document.getElementById("filterSelect").selectedOptions[0].innerText; 
     const colore = item.blockchain === "HIVE" ? "#ffff00" : 
-                   item.blockchain === "BLURT" ? "#FF3333" : "#90ee90";
+                   item.blockchain === "BLURT" ? "#FF6600" : "#90ee90";
     const chain = item.blockchain;
     return `
         <div class="cell-content">
@@ -1025,7 +1025,7 @@ function load() {
                         new Promise(res => api.getActiveVotes(author, permlink + suf, (e, r) => res(r || [])))
                     );
                     Promise.all(promises).then(votes => {
-   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF3333" : "#90ee90";	
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF6600" : "#90ee90";	
 						const htmls = votes.map(arr => (Array.isArray(arr) ? arr : [])
 						.filter(v => v && v.percent > 0)
 						.map(v => v.voter)
@@ -1087,7 +1087,7 @@ function load() {
 						doc.head.appendChild(style);
                     };
              		if (currentFilter === "M") {
-   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF3333" : "#90ee90";	
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF6600" : "#90ee90";	
 						let rows = '';
 						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
    					        const user = blkdata[chain.toUpperCase()][j].winner || '';
@@ -1121,7 +1121,7 @@ function load() {
 							</html>`;
                 }
              		if (currentFilter === "G") {
-   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF3333" : "#90ee90";	
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF6600" : "#90ee90";	
 						let rows = '';
 						
                         if (chain === "hive") { 
@@ -1194,7 +1194,7 @@ function vote(perm, chain, msg) {
     document.getElementById("postingKeyWrapper").style.display = 'block';
 
     const colore = currentChain === "HIVE" ? "#ffff00" : 
-                   currentChain === "BLURT" ? "#FF3333" : "#90ee90";
+                   currentChain === "BLURT" ? "#FF6600" : "#90ee90";
     
 	const message = document.getElementById("message");
 	const messagenter = document.getElementById("messagenter");
