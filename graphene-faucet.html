@@ -615,6 +615,7 @@ link {
                 <option value="F">Finished</option>
                 <option value="G">Giveaway Rank</option>
                 <option value="M">Multistrike Rank</option>
+                <option value="S">Songs 4 Graphene</option>
             </select>
         </div>
     </div>
@@ -839,7 +840,7 @@ function toggleColumn(col) {
 }
 
 function createEventCell(item) {
- if (currentFilter != "G" && currentFilter != "M") {
+ if (currentFilter != "G" && currentFilter != "M" && currentFilter != "S") {
 	const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
     const colore = item.blockchain === "HIVE" ? "#ffff00" : 
                    item.blockchain === "BLURT" ? "#FF6600" : "#90ee90";
@@ -920,7 +921,7 @@ function createEventCell(item) {
 
             var maxRows = 1;
 
-			if (currentFilter != "G" && currentFilter != "M") {
+			if (currentFilter != "G" && currentFilter != "M" && currentFilter != "S") {
 			   maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
             }
 	
@@ -955,7 +956,7 @@ function load() {
         ['steem', 'hive', 'blurt'].forEach((chain, colIdx) => {
             const cell = cells[colIdx];
             if (!cell || cell.innerHTML.includes('—')) return;
-		if (currentFilter != "G" && currentFilter != "M") {
+		if (currentFilter != "G" && currentFilter != "M" && currentFilter != "S") {
             const str = cell.innerHTML;
             const ini = str.indexOf("body-");
             const fin = str.indexOf("-endbody");
@@ -1120,6 +1121,44 @@ function load() {
 							</body>
 							</html>`;
                 }
+             		if (currentFilter === "S") {
+   				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF6600" : "#90ee90";	
+						let rows = '';
+						for (let j = 0; j < blkdata[chain.toUpperCase()].length; j++) {
+   					        const user = blkdata[chain.toUpperCase()][j].user || '';
+   					        const link = blkdata[chain.toUpperCase()][j].link || '';
+   					        const titolo = blkdata[chain.toUpperCase()][j].titolo || '';
+						    const cell = (value,user) => {
+                                  if (user === document.getElementById("user").value) {
+                                     return `<span style="color: white; font-weight: bold;">${value}</span>`;
+                                  }
+                                  return value || '';
+                            };
+						    const cell2 = (value) => {
+                                  return `<iframe src="${value}" width="300" height="50">Error!</iframe>` || '';
+                            };                                                                      
+
+							   rows += `<tr><td style="text-align:left;">${cell(user, user)}</td><td>${cell(titolo, user)}</td><td>${cell2(link)}</td></tr>`;
+						}
+						iframe.srcdoc = `
+							<!DOCTYPE html>
+							<html>
+							<head>
+								<style>
+									table { width: 100%; border-collapse: collapse; color: ${colore}; }
+									th, td { border: 1px solid white; padding: 4px; text-align: left; font-size: 16px; }
+									th { background: #333; }
+								</style>
+							</head>
+							<body>
+								<table>
+									<tr><th style="text-align:left;">User</th><th style="text-align:left;">Title</th><th style="text-align:left;">Song</th></tr>
+									${rows}
+								</table>
+							</body>
+							</html>`;
+                }
+
              		if (currentFilter === "G") {
    				        const colore = chain.toUpperCase() === "HIVE" ? "#ffff00" : chain.toUpperCase() === "BLURT" ? "#FF6600" : "#90ee90";	
 						let rows = '';
