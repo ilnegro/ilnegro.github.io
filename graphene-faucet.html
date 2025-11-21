@@ -839,6 +839,9 @@ function toggleColumn(col) {
     if (activeTh) activeTh.classList.add('active');
 }
 
+
+
+
 function createEventCell(item) {
  if (currentFilter != "G" && currentFilter != "M" && currentFilter != "S") {
 	const bodyName = item.perm.replace(/@/, '').replace(/\//g, '_o_o_o_');
@@ -948,6 +951,8 @@ load(); // <--- CARICA IFRAME
             console.error('Error:', error);
         }
     }
+
+
 
 function load() {
     const rows = document.querySelectorAll('.table-body-row');
@@ -1128,6 +1133,7 @@ function load() {
    					        const user = blkdata[chain.toUpperCase()][j].user || '';
    					        const link = blkdata[chain.toUpperCase()][j].link || '';
    					        const titolo = blkdata[chain.toUpperCase()][j].titolo || '';
+							const id = blkdata[chain.toUpperCase()][j].id || '';
 						    const cell = (value,user) => {
                                   if (user === document.getElementById("user").value) {
                                      return `<span style="color: white; font-weight: bold;">${value}</span>`;
@@ -1135,7 +1141,26 @@ function load() {
                                   return value || '';
                             };
 						    const cell2 = (value) => {
-                                  return `<iframe src="${value}" width="300" height="50">Error!</iframe>` || '';
+									  return `
+										<div style="display:flex; width:320px; height:42px; align-items:center; gap:8px; color: white; font-size:14px;">
+										<audio id="${id}" 
+											   src="${link}" 
+											   preload="metadata" 
+											   controls 
+											   controlsList="nodownload"
+											   style="width:100%; max-width:320px; height:42px;">
+										  Your browser does not support audio
+										</audio>
+										</div>
+									  `;
+/*								    return `
+										<div style="display:flex; align-items:center; gap:8px; color: white; font-size:14px;">
+										  <button onclick="toggleAudio('${id}')" 
+												  id="btn_${id}" 												 style="width:32px;height:32px;padding:0;border:none;background:#333;color:white;border-radius:50%;cursor:pointer;font-size:16px;">Play</button>
+										  <audio id="${id}" src="${link}" preload="none"></audio>
+										</div>
+									  `;
+*/
                             };                                                                      
 
 							   rows += `<tr><td style="text-align:left;">${cell(user, user)}</td><td>${cell(titolo, user)}</td><td>${cell2(link)}</td></tr>`;
@@ -1150,11 +1175,23 @@ function load() {
 									th { background: #333; }
 								</style>
 							</head>
+                            <script>
+							var tag = '<' + '/script>';
+								document.addEventListener('play', function(e) {
+								  const currentAudio = e.target;
+								  document.querySelectorAll('audio').forEach(audio => {
+									if (audio !== currentAudio && !audio.paused) {
+									  audio.pause();
+									}
+								  });
+								}, true);
+							</scr${''}ipt>
 							<body>
 								<table>
 									<tr><th style="text-align:left;">User</th><th style="text-align:left;">Title</th><th style="text-align:left;">Song</th></tr>
 									${rows}
 								</table>
+
 							</body>
 							</html>`;
                 }
