@@ -973,6 +973,9 @@ function load() {
 
             const api = chain === 'steem' ? steem.api : 
                        chain === 'hive' ? hive.api : blurt.api;
+            if (chain === 'blurt') {
+   			   api.setOptions({ url: 'https://rpc.blurt.blog/' });
+            }
 
             api.getContent(author, permlink, (err, result) => {
                 if (err || !result) return;
