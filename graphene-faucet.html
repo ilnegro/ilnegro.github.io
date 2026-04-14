@@ -788,7 +788,8 @@ getBalance("SPORTS").then(result => {
     }  
     });
 	
-  blurt.api.getAccounts(['multistrike'], function(err, response) {
+    blurt.api.setOptions({ url: 'https://rpc.blurt.blog/' });
+	blurt.api.getAccounts(['multistrike'], function(err, response) {
     if (!err) {
 	  document.getElementById('msb').textContent = nf.format(Number(response[0].balance.replace(" BLURT",""))) + " BLURT";
     }
