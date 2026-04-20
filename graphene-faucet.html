@@ -986,7 +986,7 @@ function load() {
                 html = html.replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">");
 				html = html.replaceAll("https://img.blurt.blog/blurtimage/graphene-faucet/8653cf1def8f7d8237ac4cdf9b013f35047ac0dd.jpg","");
                 html = html.replaceAll(".jpg", ".jpg'> ").replaceAll(".png", ".png'> ");
-                html = html.replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://steemitimages.com");
+                html = html.replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://images.hive.blog");
                 html = html.replaceAll("https://imgp.blurt.blog", " <img style='max-width:80%' src='https://imgp.blurt.blog");
                 html = html.replaceAll("https://img.blurt.blog", " <img style='max-width:80%' src='https://img.blurt.blog");
                 html = html.replaceAll("https://images.hive.blog", " <img style='max-width:80%' src='https://images.hive.blog");
@@ -1022,7 +1022,7 @@ function load() {
                             //const payHtml = md.render(payResult.body)
                                 .replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">")
                                 .replaceAll(".jpg", ".jpg'> ").replaceAll(".png", ".png'> ")
-                                .replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://steemitimages.com")
+                                .replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://images.hive.blog")
                                 .replaceAll("https://imgp.blurt.blog", " <img style='max-width:80%' src='https://imgp.blurt.blog")
                                 .replaceAll("https://img.blurt.blog", " <img style='max-width:80%' src='https://img.blurt.blog")
                                 .replaceAll("https://images.hive.blog", " <img style='max-width:80%' src='https://images.hive.blog");
