@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@blurtfoundation/blurtjs/dist/blurt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
-	
+    
     <!-- FAVICON -->
     <link rel="icon" type="image/png" href="https://files.peakd.com/file/peakd-hive/graphene-faucet/qwen-image---free_2025-09-17T12-23-14-682Z.png" sizes="32x32">
     <link rel="icon" type="image/png" href="https://files.peakd.com/file/peakd-hive/graphene-faucet/qwen-image---free_2025-09-17T12-23-14-682Z.png" sizes="16x16">
@@ -568,9 +568,37 @@ link {
 	color: white; 
 	font-size: 16px;
 }
+
+/* LOADING SPINNER */
+#loading {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: rgba(0,0,0,0.8);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+}
+#loading i {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
     </style>
 </head>
 <body>
+
+<div id="loading">
+    <div style="color:white;">
+        <i class="fas fa-spinner"></i>
+        <p style="margin-top:10px;">Processing vote...</p>
+    </div>
+</div>
 
 <div id="header">
     <div class="header-content">
@@ -593,13 +621,17 @@ link {
         <div class="buttons-right">
 			<div class="button-container">
 			  <button class="img-btn" data-id="1" id="bSKA">
-				<img src="https://ilnegro.github.io/SKA.png" alt="Opzione 1">
+				<img src="https://ilnegro.github.io/SKA.png" alt="GKA">
 			  </button>
 			  <button class="img-btn" data-id="2" id="bWV">
-				<img src="https://ilnegro.github.io/WV.png" alt="Opzione 2">
+				<img src="https://ilnegro.github.io/WV.png" alt="WV">
 			  </button>
 			  <button class="img-btn" data-id="3" id="bPK">
-				<img src="https://ilnegro.github.io/PK.jpg" alt="Opzione 3">
+				<img src="https://ilnegro.github.io/PK.jpg" alt="PK">
+			  </button>
+			  <!-- NUOVO BOTTONCINO GKW -->
+			  <button class="img-btn" data-id="4" id="bGKW">
+				<img src="https://ilnegro.github.io/GKW.png" alt="GKW">
 			  </button>
 			<input class="user-container" onchange="applyFilter()" type="text" id="user" placeholder="e.g. yourusername">
 			</div>
@@ -698,13 +730,13 @@ function isMobileDevice() {
      ism = true;
      document.getElementById('bSKA').style.display = 'block';
      document.getElementById('bWV').style.display = 'none';
-	 const targetBtn = document.querySelector(`.img-btn[data-id="1"`);
+	 const targetBtn = document.querySelector(`.img-btn[data-id="1"]`);
      targetBtn.classList.add('active');
   } else  {
      ism = false;
      document.getElementById('bSKA').style.display = 'none';
      document.getElementById('bWV').style.display = 'block';
-	 const targetBtn = document.querySelector(`.img-btn[data-id="2"`);
+	 const targetBtn = document.querySelector(`.img-btn[data-id="2"]`);
      targetBtn.classList.add('active');
   }
 }
@@ -713,13 +745,13 @@ function thereIsWv() {
   if (window.whalevault) {
      tiwv = true;  
      document.getElementById('bWV').style.display = 'block';
-	 const targetBtn = document.querySelector(`.img-btn[data-id="2"`);
+	 const targetBtn = document.querySelector(`.img-btn[data-id="2"]`);
      targetBtn.classList.add('active');
   } else {
      tiwv = false;
      document.getElementById('bWV').style.display = 'none';
      if (!ism) {
-   	    const targetBtn = document.querySelector(`.img-btn[data-id="3"`);
+   	    const targetBtn = document.querySelector(`.img-btn[data-id="3"]`);
         targetBtn.classList.add('active');
      }
   }
@@ -804,7 +836,7 @@ getBalance("SPORTS").then(result => {
 			const value = this.getAttribute('data-value');
 			const slider = document.getElementById('voteWeight');
 			slider.value = value;
-			document.getElementById('weightValue').textContent = value;
+			document.getElementById("weightValue").textContent = value;
 		});
 	});
 
@@ -921,7 +953,6 @@ function createEventCell(item) {
 			
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-//            const maxRows = Math.max(...Object.values(blockchainData).map(arr => arr.length));
 
             var maxRows = 1;
 
@@ -1019,7 +1050,6 @@ function load() {
                         if (payResult && payResult.parent_permlink === permlink) {
 						    const mdWithBreaks = window.markdownit({ breaks: true });
                             const payHtml = mdWithBreaks.render(payResult.body)
-                            //const payHtml = md.render(payResult.body)
                                 .replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">")
                                 .replaceAll(".jpg", ".jpg'> ").replaceAll(".png", ".png'> ")
                                 .replaceAll("https://steemitimages.com", " <img style='max-width:80%' src='https://images.hive.blog")
@@ -1053,7 +1083,6 @@ function load() {
                                   return value || '';
                             }; 
 				            rows += `<tr><td>${cell(htmls[0][j],0)}</td><td>${cell(htmls[1][j],1)}</td><td>${cell(htmls[2][j],2)}</td><td>${cell(htmls[3][j],3)}</td></tr>`;
-//                            rows += `<tr><td>${htmls[0][j] || ''}</td><td>${htmls[1][j] || ''}</td><td>${htmls[2][j] || ''}</td><td>${htmls[3][j] || ''}</td></tr>`;
                         }
 						const inte = (value, col) => {
 							  if (ce[col] === "S") {
@@ -1157,14 +1186,6 @@ function load() {
 										</audio>
 										</div>
 									  `;
-/*								    return `
-										<div style="display:flex; align-items:center; gap:8px; color: white; font-size:14px;">
-										  <button onclick="toggleAudio('${id}')" 
-												  id="btn_${id}" 												 style="width:32px;height:32px;padding:0;border:none;background:#333;color:white;border-radius:50%;cursor:pointer;font-size:16px;">Play</button>
-										  <audio id="${id}" src="${link}" preload="none"></audio>
-										</div>
-									  `;
-*/
                             };                                                                      
 
 							   rows += `<tr><td style="text-align:left;">${cell(user, user)}</td><td>${cell(titolo, user)}</td><td>${cell2(link)}</td></tr>`;
@@ -1280,7 +1301,7 @@ function vote(perm, chain, msg) {
 	const messagenter = document.getElementById("messagenter");
 	const chainLabel = document.getElementById("chainLabel");
 	const chainLabelk = document.getElementById("chainLabelk");
-	const vote = document.getElementById("vote");
+	const voteBtn = document.getElementById("vote");
 	const cancel = document.getElementById("cancel");
     const modal = document.getElementById("loginModal");
     modal.style.setProperty('--blockchain-color', colore);	
@@ -1289,26 +1310,23 @@ function vote(perm, chain, msg) {
 	messagenter.style.setProperty('color', colore);
     chainLabel.style.setProperty('color', colore);
     chainLabelk.style.setProperty('color', colore);
-    vote.style.setProperty('background', colore);
+    voteBtn.style.setProperty('background', colore);
     cancel.style.setProperty('background', colore);
     if (currentChain.toLowerCase() === "steem" || currentChain.toLowerCase() === "hive" ) {
-       vote.style.setProperty('color', 'black');
+       voteBtn.style.setProperty('color', 'black');
        cancel.style.setProperty('color', 'black');
     } else  {
-       vote.style.setProperty('color', 'white');
+       voteBtn.style.setProperty('color', 'white');
        cancel.style.setProperty('color', 'white');
     }
 	
-//    if (currentChain.toLowerCase() === "steem" && ism) {
+    // MOBILE STEEM → KEYCHAIN
     if (document.querySelector('.img-btn.active').dataset.id === "1") { 
-	
-//    if (ism) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Steem Keychain App";
     }
 
     if (document.querySelector('.img-btn.active').dataset.id === "2") { 
-//    if (tiwv) {
        document.getElementById("postingKeyWrapper").style.display = 'none';
        document.getElementById("chainLabel").textContent = "Whalevault";
     }
@@ -1329,10 +1347,6 @@ function showLoginModal(chain, permlink, msg) {
     	document.getElementById("username").value = document.getElementById("user").value;
     }	
     
-    // Mostra sempre la key (tranne mobile Steem)
-//    document.getElementById("postingKey").labels[0].style.display = 'block';
-//    document.getElementById("postingKey").style.display = 'block';
-    
     document.getElementById("loginModal").classList.add("show");
 }
 
@@ -1344,56 +1358,112 @@ function showLoginModal(chain, permlink, msg) {
 document.getElementById("loginForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const userin = document.getElementById("username").value.trim();
-//    const keyWrapper = document.getElementById("postingKeyWrapper");
     const weight = parseInt(document.getElementById("voteWeight").value) * 100; // 1–100 → 100–10000
 
     var ak = "";
-//    if (!ism || currentChain.toLowerCase() != "steem") {
     if (document.querySelector('.img-btn.active').dataset.id === "3") {
        ak = document.getElementById("postingKey").value.trim();
     }
 
     hideLoginModal();
-//    keyWrapper.style.display = 'block'; // Reset per prossimo uso
 
     if (!userin) {
         alert("Username is required!");
         return;
     }
 
-    // MOBILE STEEM → KEYCHAIN
-//    if (ism && tiska && currentChain.toLowerCase() === "steem") {
-//    if (ism && tiska) {
+    // GKA - Graphene Keychain App
     if (document.querySelector('.img-btn.active').dataset.id === "1") { 
-        const data = new Date();
+        const tm = Date.now();
+        const ops = [
+            ["vote", {
+                "voter": userin,
+                "author": 'graphene-faucet',
+                "permlink": currentPermlink,
+                "weight": weight
+            }]
+        ];
+        
         const jsonData = {
-            tmsmp: data.getTime(),
+            tmsmp: tm,
             site: "Graphene-Faucet",
-            action: 'vote',
+            action: 'multi',
+            chain: currentChain.toLowerCase(),
             keytype: 'posting',
             username: userin,
-			chain: currentChain.toLowerCase(),
-            operation: {
-                voter: userin,
-                author: 'graphene-faucet',
-                permlink: currentPermlink,
-                weight: weight
-            }
+            operation: ops
         };
         const jsonString = encodeURIComponent(JSON.stringify(jsonData));
         const deepLink = `com.steemkeychain.app://operation?jsondata=${jsonString}`;
 
+        $('#loading').show();
         try {
             window.location.href = deepLink;
         } catch (error) {
+            $('#loading').hide();
             alert('Failed to open Steem Keychain. Install it.');
             window.location.href = 'https://drive.google.com/file/d/1rJTZYEtCa8NC3zhXtHEg-rv4XYwbtZSC/view?usp=sharing';
         }
         return;
     }
 
+    // GKW - Graphene Keychain Web (NEW!)
+    if (document.querySelector('.img-btn.active').dataset.id === "4") { 
+        const tm = Date.now();
+        const ops = [
+            ["vote", {
+                "voter": userin,
+                "author": 'graphene-faucet',
+                "permlink": currentPermlink,
+                "weight": weight
+            }]
+        ];
+        
+        const jsonData = {
+            tmsmp: tm,
+            site: "Graphene-Faucet",
+            action: 'multi',
+            chain: currentChain.toLowerCase(),
+            keytype: 'posting',
+            username: userin,
+            operation: ops
+        };
+        
+        const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+        const popupUrl = `https://timeapp.foundation/gka/index.html?jsondata=${jsonString}`;
+        
+        $('#loading').show();
+        
+        var popup = window.open(popupUrl, 'GKF_Vote_' + tm, 'width=400,height=800');
+        
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+            $('#loading').hide();
+            alert('⚠️ Popup blocked! Please allow popups for this site.');
+            return;
+        }
+        
+        startPollingForOperation(
+            tm,
+            userin,
+            'Graphene-Faucet',
+            'multi',
+            'posting',
+            function() {
+                $('#loading').hide();
+                popup.close();
+                alert("✅ SUCCESS!\n\nVote Casted via GKW!");
+                loadTable();
+            },
+            function(error) {
+                $('#loading').hide();
+                popup.close();
+                alert('❌ Vote via GKW failed: ' + error);
+            }
+        );
+        return;
+    }
+
     if (document.querySelector('.img-btn.active').dataset.id === "2") { 
-//    if (tiwv) {
 	    var ur = "";
 	    var blk = "";
 		const ops = [
@@ -1488,6 +1558,54 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
   }
   loadTable();
 });
+
+// ===========================================
+// POLLING FUNCTION FOR GKA/GKW
+// ===========================================
+function startPollingForOperation(tm, username, site, action, keytype, onSuccess, onFailure) {
+    var ckUrl = `https://timeapp.foundation/ckr.php?params=${tm} ${site} ${action} ${keytype} ${username}`;
+    
+    var pollCount = 0;
+    var startTime = Date.now();
+    var finalResponseReceived = false;
+    
+    var pollInterval = setInterval(function() {
+        pollCount++;
+        var elapsed = Math.floor((Date.now() - startTime) / 1000);
+        
+        $.ajax({
+            url: ckUrl,
+            type: 'POST',
+            timeout: 5000,
+            success: function(response) {
+                response = (response || '').trim();
+                
+                if (response === 'NA') {
+                    console.log('[POLLING] Still waiting...');
+                }
+                else if (response === 'Ok') {
+                    clearInterval(pollInterval);
+                    finalResponseReceived = true;
+                    if (onSuccess) onSuccess();
+                }
+                else {
+                    clearInterval(pollInterval);
+                    finalResponseReceived = true;
+                    if (onFailure) onFailure('Operation failed with status: ' + response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('[POLLING Error] #' + pollCount + ':', status);
+            }
+        });
+    }, 3000);
+    
+    setTimeout(function() {
+        if (finalResponseReceived) return;
+        clearInterval(pollInterval);
+        if (onFailure) onFailure('No response after 2 minutes');
+    }, 120000);
+}
 
 // window.onload = loadTable;
 window.onload = function() {
