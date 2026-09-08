@@ -364,9 +364,27 @@
 /* RIGA 4 BOTTONI AFFIANCATI */
 .button-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr auto 1fr 1fr 1fr;
     gap: 6px;
     margin-top: 4px;
+    align-items: center;
+}
+
+.also-match-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #ccc;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.also-match-label input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
 
 .button-row .button {
@@ -820,14 +838,18 @@ function createEventCell(item) {
                         - ${item.team1} ${item.scoreteam1 || "?"} - ${item.scoreteam2 || "?"} ${item.team2}  
                     </div>
 
-                    <div class="button-row">
+					<div class="button-row">
                         <button onclick="${isDisabled ? '' : `vote('${item.perm}', '${chain}', 'Vote Match: ${item.team1} vs ${item.team2}')`}"
                                 class="${isDisabled ? 'button disabled' : 'button'}">Vote Match</button>
-                        <button onclick="${isDisabled ? '' : `vote('${permh}', '${chain}', '${item.team1} Win')`}"
+                        <label class="also-match-label" title="If checked, Home/Draw/Away also votes the Match post">
+                            <input type="checkbox" id="also-match-${item.id}" ${isDisabled ? 'disabled' : ''}>
+                            +Match
+                        </label>
+                        <button onclick="${isDisabled ? '' : `vote('${permh}', '${chain}', '${item.team1} Win', '${item.perm}', '${item.id}')`}"
                                 class="${isDisabled ? 'button disabled' : 'button'}">${item.team1} Win</button>
-                        <button onclick="${isDisabled ? '' : `vote('${permd}', '${chain}', 'Draw for ${item.team1} vs ${item.team2}')`}"
+                        <button onclick="${isDisabled ? '' : `vote('${permd}', '${chain}', 'Draw for ${item.team1} vs ${item.team2}', '${item.perm}', '${item.id}')`}"
                                 class="${isDisabled ? 'button disabled' : 'button'}">Draw</button>
-                        <button onclick="${isDisabled ? '' : `vote('${perma}', '${chain}', '${item.team2} Win')`}"
+                        <button onclick="${isDisabled ? '' : `vote('${perma}', '${chain}', '${item.team2} Win', '${item.perm}', '${item.id}')`}"
                                 class="${isDisabled ? 'button disabled' : 'button'}">${item.team2} Win</button>
                     </div>
                 </div>
@@ -1194,21 +1216,24 @@ function load() {
 // ===========================================
 // FUNZIONE VOTE - APRE MODAL
 // ===========================================
-let currentPermlink = "", currentChain = "", currentMsg = "";
+let currentPermlink = "", currentChain = "", currentMsg = "", currentMatchPermlink = "", currentMatchId = "";
 
-function vote(perm, chain, msg) {
+function vote(perm, chain, msg, matchPerm, matchId) {
     perm = perm.replace("graphene-faucet/@graphene-faucet/", "");
     currentPermlink = perm;
     currentChain = chain;
     currentMsg = msg;
-    
-    // Prendi username dall'input
+    currentMatchPermlink = matchPerm
+        ? String(matchPerm).replace("graphene-faucet/@graphene-faucet/", "")
+        : "";
+    currentMatchId = matchId ? String(matchId) : "";
+
     const username = document.getElementById("userInput").value.trim();
     if (!username) {
         alert("Please enter your username first!");
         return;
     }
-    
+
     showVoteModal(chain, perm, msg);
 }
 
@@ -1247,6 +1272,39 @@ function hideVoteModal() {
     document.getElementById("voteModal").classList.remove("show");
 }
 
+function buildVoteOps(username, weight) {
+    const ops = [];
+    const alsoMatch =
+        currentMatchId &&
+        currentMatchPermlink &&
+        currentPermlink !== currentMatchPermlink &&
+        document.getElementById("also-match-" + currentMatchId)?.checked;
+
+    if (alsoMatch) {
+        ops.push([
+            "vote",
+            {
+                voter: username,
+                author: "graphene-faucet",
+                permlink: currentMatchPermlink,
+                weight: weight,
+            },
+        ]);
+    }
+
+    ops.push([
+        "vote",
+        {
+            voter: username,
+            author: "graphene-faucet",
+            permlink: currentPermlink,
+            weight: weight,
+        },
+    ]);
+
+    return ops;
+}
+
 // ===========================================
 // CLICK GKA - APRE APP
 // ===========================================
@@ -1262,7 +1320,9 @@ document.getElementById("voteWithGKA").addEventListener("click", function() {
     hideVoteModal();
     
     const tm = Date.now();
-    const ops = [
+
+    const ops = buildVoteOps(username, weight);	
+/*    const ops = [
         ["vote", {
             "voter": username,
             "author": 'graphene-faucet',
@@ -1270,7 +1330,7 @@ document.getElementById("voteWithGKA").addEventListener("click", function() {
             "weight": weight
         }]
     ];
-    
+*/    
     const jsonData = {
         tmsmp: tm,
         site: "Graphene-Faucet",
@@ -1310,7 +1370,7 @@ document.getElementById("voteWithGKW").addEventListener("click", function() {
     hideVoteModal();
     
     const tm = Date.now();
-    const ops = [
+/*    const ops = [
         ["vote", {
             "voter": username,
             "author": 'graphene-faucet',
@@ -1318,6 +1378,8 @@ document.getElementById("voteWithGKW").addEventListener("click", function() {
             "weight": weight
         }]
     ];
+*/
+    const ops = buildVoteOps(username, weight);	
     
     const jsonData = {
         tmsmp: tm,
