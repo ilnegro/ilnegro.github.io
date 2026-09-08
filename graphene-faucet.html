@@ -1301,7 +1301,7 @@ function sleep(ms) {
 // ===========================================
 // CLICK GKA - APRE APP
 // ===========================================
-document.getElementById("voteWithGKA").addEventListener("click", async function () {
+document.getElementById("voteWithGKA").addEventListener("click", function () {
     const username = document.getElementById("userInput").value.trim();
     const weight = parseInt(document.getElementById("modalVoteWeight").value, 10) * 100;
 
@@ -1311,49 +1311,35 @@ document.getElementById("voteWithGKA").addEventListener("click", async function 
     }
 
     hideVoteModal();
+
+    const { ops, alsoMatch, action } = buildVoteOperations(username, weight);
+    const tm = Date.now();
+
+    const jsonData = {
+        tmsmp: tm,
+        site: "Graphene-Faucet",
+        action: action, // 'multi' oppure 'multiw'
+        chain: currentChain.toLowerCase(),
+        keytype: "posting",
+        username: username,
+        operation: ops,
+    };
+
+    const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+    const deepLink = "com.steemkeychain.app://operation?jsondata=" + jsonString;
+
     $("#loading").show();
 
-    const alsoMatch = getAlsoMatch();
-    const steps = [];
-
-    if (alsoMatch) {
-        steps.push(currentMatchPermlink);
-    }
-    steps.push(currentPermlink);
-
     try {
-        for (let i = 0; i < steps.length; i++) {
-            const tm = Date.now();
-            const ops = buildSingleVoteOp(username, weight, steps[i]);
-
-            const jsonData = {
-                tmsmp: tm,
-                site: "Graphene-Faucet",
-                action: "multi",
-                chain: currentChain.toLowerCase(),
-                keytype: "posting",
-                username: username,
-                operation: ops,
-            };
-
-            const jsonString = encodeURIComponent(JSON.stringify(jsonData));
-            const deepLink =
-                "com.steemkeychain.app://operation?jsondata=" + jsonString;
-
-            window.location.href = deepLink;
-
-            if (i < steps.length - 1) {
-                // tempo per firmare il 1° voto + margine anti rate-limit
-                await sleep(4000);
-            }
-        }
-
-        $("#loading").hide();
-        alert(
-            alsoMatch
-                ? "Open Keychain App and confirm both votes (Match first, then result)."
-                : "Open Keychain App and confirm the vote."
-        );
+        window.location.href = deepLink;
+        setTimeout(function () {
+            $("#loading").hide();
+            alert(
+                alsoMatch
+                    ? "Confirm in Keychain App: Match vote, then result vote (4s apart)."
+                    : "Confirm the vote in Keychain App."
+            );
+        }, 800);
     } catch (error) {
         $("#loading").hide();
         alert("Failed to open Steem Keychain. Install it.");
@@ -1365,7 +1351,7 @@ document.getElementById("voteWithGKA").addEventListener("click", async function 
 // ===========================================
 // CLICK GKW - APRE POPUP + POLLING
 // ===========================================
-document.getElementById("voteWithGKW").addEventListener("click", async function () {
+document.getElementById("voteWithGKW").addEventListener("click", function () {
     const username = document.getElementById("userInput").value.trim();
     const weight = parseInt(document.getElementById("modalVoteWeight").value, 10) * 100;
 
@@ -1376,100 +1362,63 @@ document.getElementById("voteWithGKW").addEventListener("click", async function 
 
     hideVoteModal();
 
-    const alsoMatch = getAlsoMatch();
+    const { ops, alsoMatch, action } = buildVoteOperations(username, weight);
+    const tm = Date.now();
 
-    // === APRI TUTTI I POPUP SUBITO (stesso click utente) ===
-    const popupMatch = alsoMatch
-        ? window.open("about:blank", "GKF_Vote_Match", "width=400,height=800")
-        : null;
-    const popupResult = window.open(
-        "about:blank",
-        "GKF_Vote_Result",
-        "width=400,height=800"
-    );
+    const jsonData = {
+        tmsmp: tm,
+        site: "Graphene-Faucet",
+        action: action, // 'multi' oppure 'multiw'
+        chain: currentChain.toLowerCase(),
+        keytype: "posting",
+        username: username,
+        operation: ops,
+    };
 
-    if (
-        (alsoMatch && (!popupMatch || popupMatch.closed)) ||
-        !popupResult ||
-        popupResult.closed
-    ) {
-        alert("Popup blocked! Please allow popups for this site.");
-        try { popupMatch && popupMatch.close(); } catch (e) {}
-        try { popupResult && popupResult.close(); } catch (e) {}
-        return;
-    }
-
-    const runOneVote = (popup, permlink) =>
-        new Promise((resolve, reject) => {
-            const tm = Date.now();
-            const ops = buildSingleVoteOp(username, weight, permlink);
-            const jsonData = {
-                tmsmp: tm,
-                site: "Graphene-Faucet",
-                action: "multi",
-                chain: currentChain.toLowerCase(),
-                keytype: "posting",
-                username: username,
-                operation: ops,
-            };
-            const jsonString = encodeURIComponent(JSON.stringify(jsonData));
-            const popupUrl =
-                "https://timeapp.foundation/gka/index.html?jsondata=" + jsonString;
-
-            // Non apriamo un nuovo popup: navighiamo quello già aperto
-            try {
-                popup.location.href = popupUrl;
-            } catch (e) {
-                reject(new Error("Cannot navigate popup"));
-                return;
-            }
-
-            startPollingForOperation(
-                tm,
-                username,
-                "Graphene-Faucet",
-                "multi",
-                "posting",
-                function () {
-                    resolve();
-                },
-                function (error) {
-                    reject(new Error(error));
-                }
-            );
-        });
+    const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+    const popupUrl =
+        "https://timeapp.foundation/gka/index.html?jsondata=" + jsonString;
 
     $("#loading").show();
 
-    try {
-        if (alsoMatch) {
-            // 1) Voto Match
-            await runOneVote(popupMatch, currentMatchPermlink);
+    const popup = window.open(
+        popupUrl,
+        "GKF_Vote_" + tm,
+        "width=400,height=800"
+    );
 
-            // 2) Attesa anti rate-limit chain
-            await sleep(4000);
-
-            // 3) Voto risultato (altro popup, già aperto)
-            await runOneVote(popupResult, currentPermlink);
-
-            try { popupMatch.close(); } catch (e) {}
-            try { popupResult.close(); } catch (e) {}
-
-            $("#loading").hide();
-            alert("✅ SUCCESS!\n\nMatch + result voted via GKW!");
-        } else {
-            await runOneVote(popupResult, currentPermlink);
-            try { popupResult.close(); } catch (e) {}
-            $("#loading").hide();
-            alert("✅ SUCCESS!\n\nVote cast via GKW!");
-        }
-        loadTable();
-    } catch (err) {
-        try { popupMatch && popupMatch.close(); } catch (e) {}
-        try { popupResult && popupResult.close(); } catch (e) {}
+    if (!popup || popup.closed || typeof popup.closed === "undefined") {
         $("#loading").hide();
-        alert("❌ Vote via GKW failed: " + (err.message || err));
+        alert("Popup blocked! Please allow popups for this site.");
+        return;
     }
+
+    startPollingForOperation(
+        tm,
+        username,
+        "Graphene-Faucet",
+        action, // importante: stesso action usato nella request ('multi' | 'multiw')
+        "posting",
+        function () {
+            $("#loading").hide();
+            try {
+                popup.close();
+            } catch (e) {}
+            alert(
+                alsoMatch
+                    ? "✅ SUCCESS!\n\nMatch + result voted via GKW!"
+                    : "✅ SUCCESS!\n\nVote cast via GKW!"
+            );
+            loadTable();
+        },
+        function (error) {
+            $("#loading").hide();
+            try {
+                popup.close();
+            } catch (e) {}
+            alert("❌ Vote via GKW failed: " + error);
+        }
+    );
 });
 
 document.getElementById("cancelVote").addEventListener("click", hideVoteModal);
