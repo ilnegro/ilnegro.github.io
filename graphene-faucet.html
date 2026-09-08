@@ -1377,37 +1377,32 @@ document.getElementById("voteWithGKW").addEventListener("click", async function 
     hideVoteModal();
 
     const alsoMatch = getAlsoMatch();
-    const steps = [];
 
-    if (alsoMatch) {
-        steps.push({ permlink: currentMatchPermlink, label: "Match" });
+    // === APRI TUTTI I POPUP SUBITO (stesso click utente) ===
+    const popupMatch = alsoMatch
+        ? window.open("about:blank", "GKF_Vote_Match", "width=400,height=800")
+        : null;
+    const popupResult = window.open(
+        "about:blank",
+        "GKF_Vote_Result",
+        "width=400,height=800"
+    );
+
+    if (
+        (alsoMatch && (!popupMatch || popupMatch.closed)) ||
+        !popupResult ||
+        popupResult.closed
+    ) {
+        alert("Popup blocked! Please allow popups for this site.");
+        try { popupMatch && popupMatch.close(); } catch (e) {}
+        try { popupResult && popupResult.close(); } catch (e) {}
+        return;
     }
-    steps.push({
-        permlink: currentPermlink,
-        label: alsoMatch ? "Result" : "Vote",
-    });
 
-    try {
-        for (let i = 0; i < steps.length; i++) {
-            // Prima del 2° voto: pausa chain + conferma utente (sblocca il popup)
-            if (i > 0) {
-                await sleep(4000);
-                const goOn = confirm(
-                    "✅ First vote done.\n\nWait completed (4s).\n\nClick OK to open GKW for the second vote (" +
-                        steps[i].label +
-                        ")."
-                );
-                if (!goOn) {
-                    throw new Error("Cancelled before second vote");
-                }
-            }
-
-            $("#loading").show();
-
-            const step = steps[i];
+    const runOneVote = (popup, permlink) =>
+        new Promise((resolve, reject) => {
             const tm = Date.now();
-            const ops = buildSingleVoteOp(username, weight, step.permlink);
-
+            const ops = buildSingleVoteOp(username, weight, permlink);
             const jsonData = {
                 tmsmp: tm,
                 site: "Graphene-Faucet",
@@ -1417,56 +1412,61 @@ document.getElementById("voteWithGKW").addEventListener("click", async function 
                 username: username,
                 operation: ops,
             };
-
             const jsonString = encodeURIComponent(JSON.stringify(jsonData));
             const popupUrl =
                 "https://timeapp.foundation/gka/index.html?jsondata=" + jsonString;
 
-            // Ogni volta una finestra nuova, completamente separata
-            const popup = window.open(
-                popupUrl,
-                "GKF_Vote_" + tm,
-                "width=400,height=800"
-            );
-
-            if (!popup || popup.closed || typeof popup.closed === "undefined") {
-                throw new Error(
-                    "Popup blocked! Please allow popups for this site and retry."
-                );
+            // Non apriamo un nuovo popup: navighiamo quello già aperto
+            try {
+                popup.location.href = popupUrl;
+            } catch (e) {
+                reject(new Error("Cannot navigate popup"));
+                return;
             }
 
-            await new Promise((resolve, reject) => {
-                startPollingForOperation(
-                    tm,
-                    username,
-                    "Graphene-Faucet",
-                    "multi",
-                    "posting",
-                    function () {
-                        try {
-                            popup.close();
-                        } catch (e) {}
-                        resolve();
-                    },
-                    function (error) {
-                        try {
-                            popup.close();
-                        } catch (e) {}
-                        reject(new Error(error));
-                    }
-                );
-            });
+            startPollingForOperation(
+                tm,
+                username,
+                "Graphene-Faucet",
+                "multi",
+                "posting",
+                function () {
+                    resolve();
+                },
+                function (error) {
+                    reject(new Error(error));
+                }
+            );
+        });
+
+    $("#loading").show();
+
+    try {
+        if (alsoMatch) {
+            // 1) Voto Match
+            await runOneVote(popupMatch, currentMatchPermlink);
+
+            // 2) Attesa anti rate-limit chain
+            await sleep(4000);
+
+            // 3) Voto risultato (altro popup, già aperto)
+            await runOneVote(popupResult, currentPermlink);
+
+            try { popupMatch.close(); } catch (e) {}
+            try { popupResult.close(); } catch (e) {}
 
             $("#loading").hide();
+            alert("✅ SUCCESS!\n\nMatch + result voted via GKW!");
+        } else {
+            await runOneVote(popupResult, currentPermlink);
+            try { popupResult.close(); } catch (e) {}
+            $("#loading").hide();
+            alert("✅ SUCCESS!\n\nVote cast via GKW!");
         }
-
-        alert(
-            alsoMatch
-                ? "✅ SUCCESS!\n\nMatch + result voted via GKW!"
-                : "✅ SUCCESS!\n\nVote cast via GKW!"
-        );
         loadTable();
     } catch (err) {
+        try { popupMatch && popupMatch.close(); } catch (e) {}
+        try { popupResult && popupResult.close(); } catch (e) {}
         $("#loading").hide();
         alert("❌ Vote via GKW failed: " + (err.message || err));
     }
