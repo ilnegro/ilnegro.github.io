@@ -843,7 +843,6 @@ function createEventCell(item) {
                                 class="${isDisabled ? 'button disabled' : 'button'}">Vote Match</button>
                         <label class="also-match-label" title="If checked, Home/Draw/Away also votes the Match post">
                             <input type="checkbox" id="also-match-${item.id}" ${isDisabled ? 'disabled' : ''}>
-                            +Match
                         </label>
                         <button onclick="${isDisabled ? '' : `vote('${permh}', '${chain}', '${item.team1} Win', '${item.perm}', '${item.id}')`}"
                                 class="${isDisabled ? 'button disabled' : 'button'}">${item.team1} Win</button>
