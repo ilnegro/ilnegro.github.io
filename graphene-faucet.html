@@ -1285,6 +1285,39 @@ function buildSingleVoteOp(username, weight, permlink) {
     ];
 }
 
+function buildVoteOperations(username, weight) {
+    const ops = [];
+    const alsoMatch = getAlsoMatch();
+
+    if (alsoMatch) {
+        ops.push([
+            "vote",
+            {
+                voter: username,
+                author: "graphene-faucet",
+                permlink: currentMatchPermlink,
+                weight: weight,
+            },
+        ]);
+    }
+
+    ops.push([
+        "vote",
+        {
+            voter: username,
+            author: "graphene-faucet",
+            permlink: currentPermlink,
+            weight: weight,
+        },
+    ]);
+
+    return {
+        ops,
+        alsoMatch,
+        action: ops.length > 1 ? "multiw" : "multi",
+    };
+}
+
 function getAlsoMatch() {
     return (
         currentMatchId &&
