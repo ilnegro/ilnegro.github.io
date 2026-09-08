@@ -1271,156 +1271,195 @@ function hideVoteModal() {
     document.getElementById("voteModal").classList.remove("show");
 }
 
-function buildVoteOps(username, weight) {
-    const ops = [];
-    const alsoMatch =
-        currentMatchId &&
-        currentMatchPermlink &&
-        currentPermlink !== currentMatchPermlink &&
-        document.getElementById("also-match-" + currentMatchId)?.checked;
-
-    if (alsoMatch) {
-        ops.push([
+function buildSingleVoteOp(username, weight, permlink) {
+    return [
+        [
             "vote",
             {
                 voter: username,
                 author: "graphene-faucet",
-                permlink: currentMatchPermlink,
+                permlink: permlink,
                 weight: weight,
             },
-        ]);
-    }
+        ],
+    ];
+}
 
-    ops.push([
-        "vote",
-        {
-            voter: username,
-            author: "graphene-faucet",
-            permlink: currentPermlink,
-            weight: weight,
-        },
-    ]);
+function getAlsoMatch() {
+    return (
+        currentMatchId &&
+        currentMatchPermlink &&
+        currentPermlink !== currentMatchPermlink &&
+        document.getElementById("also-match-" + currentMatchId)?.checked
+    );
+}
 
-    return ops;
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ===========================================
 // CLICK GKA - APRE APP
 // ===========================================
-document.getElementById("voteWithGKA").addEventListener("click", function() {
+document.getElementById("voteWithGKA").addEventListener("click", async function () {
     const username = document.getElementById("userInput").value.trim();
-    const weight = parseInt(document.getElementById("modalVoteWeight").value) * 100;
-    
+    const weight = parseInt(document.getElementById("modalVoteWeight").value, 10) * 100;
+
     if (!username) {
         alert("Username is required!");
         return;
     }
-    
-    hideVoteModal();
-    
-    const tm = Date.now();
 
-    const ops = buildVoteOps(username, weight);	
-/*    const ops = [
-        ["vote", {
-            "voter": username,
-            "author": 'graphene-faucet',
-            "permlink": currentPermlink,
-            "weight": weight
-        }]
-    ];
-*/    
-    const jsonData = {
-        tmsmp: tm,
-        site: "Graphene-Faucet",
-        action: 'multi',
-        chain: currentChain.toLowerCase(),
-        keytype: 'posting',
-        username: username,
-        operation: ops
-    };
-    
-    const jsonString = encodeURIComponent(JSON.stringify(jsonData));
-    const deepLink = `com.steemkeychain.app://operation?jsondata=${jsonString}`;
-    
-    $('#loading').show();
-    
+    hideVoteModal();
+    $("#loading").show();
+
+    const alsoMatch = getAlsoMatch();
+    const steps = [];
+
+    if (alsoMatch) {
+        steps.push(currentMatchPermlink);
+    }
+    steps.push(currentPermlink);
+
     try {
-        window.location.href = deepLink;
+        for (let i = 0; i < steps.length; i++) {
+            const tm = Date.now();
+            const ops = buildSingleVoteOp(username, weight, steps[i]);
+
+            const jsonData = {
+                tmsmp: tm,
+                site: "Graphene-Faucet",
+                action: "multi",
+                chain: currentChain.toLowerCase(),
+                keytype: "posting",
+                username: username,
+                operation: ops,
+            };
+
+            const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+            const deepLink =
+                "com.steemkeychain.app://operation?jsondata=" + jsonString;
+
+            window.location.href = deepLink;
+
+            if (i < steps.length - 1) {
+                // tempo per firmare il 1° voto + margine anti rate-limit
+                await sleep(4000);
+            }
+        }
+
+        $("#loading").hide();
+        alert(
+            alsoMatch
+                ? "Open Keychain App and confirm both votes (Match first, then result)."
+                : "Open Keychain App and confirm the vote."
+        );
     } catch (error) {
-        $('#loading').hide();
-        alert('Failed to open Steem Keychain. Install it.');
-        window.location.href = 'https://drive.google.com/file/d/1rJTZYEtCa8NC3zhXtHEg-rv4XYwbtZSC/view?usp=sharing';
+        $("#loading").hide();
+        alert("Failed to open Steem Keychain. Install it.");
+        window.location.href =
+            "https://drive.google.com/file/d/1rJTZYEtCa8NC3zhXtHEg-rv4XYwbtZSC/view?usp=sharing";
     }
 });
 
 // ===========================================
 // CLICK GKW - APRE POPUP + POLLING
 // ===========================================
-document.getElementById("voteWithGKW").addEventListener("click", function() {
+document.getElementById("voteWithGKW").addEventListener("click", async function () {
     const username = document.getElementById("userInput").value.trim();
-    const weight = parseInt(document.getElementById("modalVoteWeight").value) * 100;
-    
+    const weight = parseInt(document.getElementById("modalVoteWeight").value, 10) * 100;
+
     if (!username) {
         alert("Username is required!");
         return;
     }
-    
+
     hideVoteModal();
-    
-    const tm = Date.now();
-/*    const ops = [
-        ["vote", {
-            "voter": username,
-            "author": 'graphene-faucet',
-            "permlink": currentPermlink,
-            "weight": weight
-        }]
-    ];
-*/
-    const ops = buildVoteOps(username, weight);	
-    
-    const jsonData = {
-        tmsmp: tm,
-        site: "Graphene-Faucet",
-        action: 'multi',
-        chain: currentChain.toLowerCase(),
-        keytype: 'posting',
-        username: username,
-        operation: ops
-    };
-    
-    const jsonString = encodeURIComponent(JSON.stringify(jsonData));
-    const popupUrl = `https://timeapp.foundation/gka/index.html?jsondata=${jsonString}`;
-    
-    $('#loading').show();
-    
-    var popup = window.open(popupUrl, 'GKF_Vote_' + tm, 'width=400,height=800');
-    
-    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-        $('#loading').hide();
-        alert('⚠️ Popup blocked! Please allow popups for this site.');
-        return;
+    $("#loading").show();
+
+    const alsoMatch = getAlsoMatch();
+    const steps = [];
+
+    if (alsoMatch) {
+        steps.push({
+            permlink: currentMatchPermlink,
+            label: "Match",
+        });
     }
-    
-    startPollingForOperation(
-        tm,
-        username,
-        'Graphene-Faucet',
-        'multi',
-        'posting',
-        function() {
-            $('#loading').hide();
-            popup.close();
-            alert("✅ SUCCESS!\n\nVote Casted via GKW!");
-            loadTable();
-        },
-        function(error) {
-            $('#loading').hide();
-            popup.close();
-            alert('❌ Vote via GKW failed: ' + error);
+    steps.push({
+        permlink: currentPermlink,
+        label: alsoMatch ? "Result" : "Vote",
+    });
+
+    try {
+        for (let i = 0; i < steps.length; i++) {
+            const step = steps[i];
+            const tm = Date.now();
+            const ops = buildSingleVoteOp(username, weight, step.permlink);
+
+            const jsonData = {
+                tmsmp: tm,
+                site: "Graphene-Faucet",
+                action: "multi",
+                chain: currentChain.toLowerCase(),
+                keytype: "posting",
+                username: username,
+                operation: ops,
+            };
+
+            const jsonString = encodeURIComponent(JSON.stringify(jsonData));
+            const popupUrl =
+                "https://timeapp.foundation/gka/index.html?jsondata=" + jsonString;
+
+            const popup = window.open(
+                popupUrl,
+                "GKF_Vote_" + tm,
+                "width=400,height=800"
+            );
+
+            if (!popup || popup.closed || typeof popup.closed === "undefined") {
+                throw new Error("Popup blocked! Please allow popups for this site.");
+            }
+
+            await new Promise((resolve, reject) => {
+                startPollingForOperation(
+                    tm,
+                    username,
+                    "Graphene-Faucet",
+                    "multi",
+                    "posting",
+                    function () {
+                        try {
+                            popup.close();
+                        } catch (e) {}
+                        resolve();
+                    },
+                    function (error) {
+                        try {
+                            popup.close();
+                        } catch (e) {}
+                        reject(new Error(error));
+                    }
+                );
+            });
+
+            // Attesa obbligatoria tra un voto e l'altro (min 3s → usiamo 4s)
+            if (i < steps.length - 1) {
+                await sleep(4000);
+            }
         }
-    );
+
+        $("#loading").hide();
+        alert(
+            alsoMatch
+                ? "✅ SUCCESS!\n\nMatch + result voted via GKW!"
+                : "✅ SUCCESS!\n\nVote cast via GKW!"
+        );
+        loadTable();
+    } catch (err) {
+        $("#loading").hide();
+        alert("❌ Vote via GKW failed: " + (err.message || err));
+    }
 });
 
 document.getElementById("cancelVote").addEventListener("click", hideVoteModal);
